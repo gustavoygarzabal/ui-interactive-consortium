@@ -1,109 +1,127 @@
-import * as React from 'react';
-import AppBar from '@mui/material/AppBar';
-import Box from '@mui/material/Box';
-import Toolbar from '@mui/material/Toolbar';
-import IconButton from '@mui/material/IconButton';
-import Typography from '@mui/material/Typography';
-import Menu from '@mui/material/Menu';
-import MenuIcon from '@mui/icons-material/Menu';
-import Container from '@mui/material/Container';
-import Button from '@mui/material/Button';
-import MenuItem from '@mui/material/MenuItem';
-import AdbIcon from '@mui/icons-material/Adb';
-import {NavLink} from "react-router-dom";
-import Diversity1Icon from '@mui/icons-material/Diversity1';
+import React from 'react';
+import { AppBar, Toolbar, Typography, IconButton, Menu, MenuItem, Button, Container, Box } from '@mui/material';
+import { Menu as MenuIcon, AccountCircle as AccountCircleIcon, Apartment as ApartmentIcon, Business as BusinessIcon } from '@mui/icons-material';
+import { NavLink, useNavigate } from 'react-router-dom';
 
 const pages = [
-    {name: 'Administradores', url: '/'},
-    {name: 'Consorcios', url: '/consortia'}
+    { name: 'Administradores', url: '/', icon: <AccountCircleIcon fontSize="small" /> },
+    { name: 'Consorcios', url: '/consortia', icon: <ApartmentIcon fontSize="small" /> },
+    { name: 'Mis Consorcios', url: '/admin/management', icon: <BusinessIcon fontSize="small" /> }
 ];
 
 function ResponsiveAppBar() {
-    const [anchorElNav, setAnchorElNav] = React.useState(null)
+    const [anchorElNav, setAnchorElNav] = React.useState(null);
+    const navigate = useNavigate();
 
+    const token = localStorage.getItem('token'); // Verificar si el usuario está autenticado
+
+    // Maneja la apertura del menú de navegación
     const handleOpenNavMenu = (event) => {
-        setAnchorElNav(event.currentTarget)
-    }
+        setAnchorElNav(event.currentTarget);
+    };
 
+    // Maneja el cierre del menú de navegación
     const handleCloseNavMenu = () => {
-        setAnchorElNav(null)
-    }
+        setAnchorElNav(null);
+    };
+
+    // Función para cerrar sesión
+    const handleLogout = () => {
+        localStorage.removeItem('token'); // Eliminar token del localStorage
+        navigate('/login'); // Redirigir al login
+    };
 
     return (
-        <AppBar position="static" sx={{ bgcolor: '#004c4c' }}>
+        <AppBar position="static" sx={{ bgcolor: '#E0D9C0' }}>
             <Container maxWidth="xl">
-                <Toolbar disableGutters >
-                    <Diversity1Icon sx={{ display: { xs: 'none', md: 'flex' }, mr: 1 }}/>
+                <Toolbar disableGutters>
+                    {/* Botón de menú para el menú desplegable */}
+                    <IconButton
+                        size="large"
+                        aria-label="open menu"
+                        aria-controls="menu-appbar"
+                        aria-haspopup="true"
+                        onClick={handleOpenNavMenu}
+                        sx={{ color: '#002776', mr: 1 }}
+                    >
+                        <MenuIcon />
+                    </IconButton>
+
+                    {/* Título de la aplicación */}
                     <Typography
                         variant="h6"
                         noWrap
                         component={NavLink}
                         to="/"
                         sx={{
-                            mr: 2,
-                            display: { xs: 'none', md: 'flex' },
                             fontFamily: 'monospace',
                             fontWeight: 700,
                             letterSpacing: '.3rem',
-                            color: 'inherit',
+                            color: '#002776',
                             textDecoration: 'none',
+                            ml: 1
                         }}
                     >
                         Consorcios interactivo
                     </Typography>
-                    <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
-                        {pages.map((page) => (
-                            <Button
-                                component={NavLink}
-                                key={page.name}
-                                to={page.url}
-                                sx={{ my: 2, color: 'white', display: 'block' }}
-                            >
-                                {page.name}
-                            </Button>
-                        ))}
-                    </Box>
 
-                    <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
-                        <IconButton
-                            size="large"
-                            aria-label="account of current user"
-                            aria-controls="menu-appbar"
-                            aria-haspopup="true"
-                            onClick={handleOpenNavMenu}
-                            color="inherit"
-                        >
-                            <MenuIcon />
-                        </IconButton>
-                        <Menu
-                            id="menu-appbar"
-                            anchorEl={anchorElNav}
-                            anchorOrigin={{
-                                vertical: 'bottom',
-                                horizontal: 'left',
-                            }}
-                            keepMounted
-                            transformOrigin={{
-                                vertical: 'top',
-                                horizontal: 'left',
-                            }}
-                            open={Boolean(anchorElNav)}
-                            onClose={handleCloseNavMenu}
-                            sx={{
-                                display: { xs: 'block', md: 'none' },
-                            }}
-                        >
-                            {pages.map((page) => (
-                                <MenuItem key={page.name} onClick={handleCloseNavMenu}>
-                                    <Typography textAlign="center">{page.name} href={page.url}</Typography>
-                                </MenuItem>
-                            ))}
-                        </Menu>
-                    </Box>
-                    <AdbIcon sx={{ display: { xs: 'flex', md: 'none' }, mr: 1 }} />
+                    {/* Menú desplegable que contiene todas las opciones */}
+                    <Menu
+                        id="menu-appbar"
+                        anchorEl={anchorElNav}
+                        anchorOrigin={{
+                            vertical: 'bottom',
+                            horizontal: 'left',
+                        }}
+                        keepMounted
+                        transformOrigin={{
+                            vertical: 'top',
+                            horizontal: 'left',
+                        }}
+                        open={Boolean(anchorElNav)}
+                        onClose={handleCloseNavMenu}
+                        sx={{ mt: '10px', boxShadow: 3, borderRadius: 2 }}
+                    >
+                        {pages.map((page) => (
+                            <MenuItem
+                                key={page.name}
+                                component={NavLink}
+                                to={page.url}
+                                onClick={handleCloseNavMenu}
+                                sx={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 1,
+                                    '&:hover': { bgcolor: '#f0f0f0' }
+                                }}
+                            >
+                                {page.icon}
+                                <Typography textAlign="center" color="#002776">{page.name}</Typography>
+                            </MenuItem>
+                        ))}
+                    </Menu>
+
+                    {/* Si el token existe, muestra el botón de "Cerrar sesión" */}
+                    {token && (
+                        <Box sx={{ ml: 'auto' }}>
+                            <Button
+                                onClick={handleLogout}
+                                sx={{
+                                    color: '#B2675E', // Color bordó/marrón
+                                    fontWeight: 'bold',
+                                    '&:hover': {
+                                        bgcolor: '#E0C69F', // Fondo claro al pasar el mouse (opcional)
+                                    },
+                                }}
+                            >
+                                Cerrar sesión
+                            </Button>
+                        </Box>
+                    )}
                 </Toolbar>
             </Container>
         </AppBar>
-    )
+    );
 }
-export default ResponsiveAppBar
+
+export default ResponsiveAppBar;
