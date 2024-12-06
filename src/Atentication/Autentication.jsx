@@ -9,7 +9,7 @@ import {
     Box, Alert,
 } from '@mui/material';
 import Auth from "./Auth.jsx";
-import {isAdmin, isSuperAdmin} from "./TokenUtils.jsx";
+import {isAdmin, isResident, isSuperAdmin} from "./TokenUtils.jsx";
 import {useNavigate} from "react-router-dom";
 
 
@@ -26,25 +26,28 @@ function Autentication() {
             const response = await Auth(email, password); // Llama al servicio de login
             const token = response.token;
             localStorage.setItem('token', token); // Guarda el token en localStorage
-            console.log('Holaaaaa')
+            console.log('Holaaaaa');
+
             // Verificamos el rol y redirigimos a la página correspondiente
             if (isSuperAdmin()) {
                 navigate('/superAdmin/management'); // Redirige al Dashboard del SuperAdmin
             } else if (isAdmin()) {
                 navigate('/admin/management'); // Redirige al Dashboard del Admin
+            } else if (isResident()) {
+                navigate('/resident/management'); // Redirige al Dashboard del Resident
             } else {
                 navigate('/login'); // Redirige a login si no se encuentra un rol válido
             }
 
-            setSuccess(true); // Indica éxito en la interfaz
-            setError(''); // Limpia errores previos
+            // Indica éxito en la interfaz
+            setSuccess(true);
+            setError('');
         } catch (err) {
             console.error(err.message);
             setError(err.message); // Muestra el error en la interfaz
             setSuccess(false);
         }
     };
-
     return (
         <Container maxWidth="sm" sx={{ display: 'flex', justifyContent: 'center', alignItems: 'flex-start', minHeight: '100vh', paddingTop: '50px' }}>
             <Paper elevation={3} sx={{ padding: '30px', borderRadius: '12px', textAlign: 'center', width: '100%' }}>

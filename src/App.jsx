@@ -4,6 +4,7 @@ import AdministratorPage from "./administrator/AdministratorPage.jsx";
 import Autentication from "./Atentication/Autentication.jsx";
 import SuperAdminPage from "./superAdmin/SuperAdminPage.jsx";
 import PrivateRoute from "./superAdmin/PrivateRoute/PrivateRoute.jsx";
+import ResidentPage from "./resident/ResidentPage.jsx";
 
 
 
@@ -37,6 +38,15 @@ function App() {
                         element={
                             <PrivateRoute requiredRole="ROLE_ADMIN">
                                 <AdministratorPage />
+                            </PrivateRoute>
+                        }
+                    />
+
+                    <Route
+                        path="/resident/management/*"
+                        element={
+                            <PrivateRoute requiredRole="ROLE_RESIDENT">
+                                <ResidentPage />
                             </PrivateRoute>
                         }
                     />
