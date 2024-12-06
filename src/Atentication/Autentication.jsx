@@ -49,9 +49,35 @@ function Autentication() {
         }
     };
     return (
-        <Container maxWidth="sm" sx={{ display: 'flex', justifyContent: 'center', alignItems: 'flex-start', minHeight: '100vh', paddingTop: '50px' }}>
-            <Paper elevation={3} sx={{ padding: '30px', borderRadius: '12px', textAlign: 'center', width: '100%' }}>
-                <Typography variant="h4" component="h1" sx={{ color: '#003366', fontWeight: 'bold', marginBottom: '20px' }}>
+        <Container
+            maxWidth="xs" // Cambié de "sm" a "xs" para hacerlo más estrecho
+            sx={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'flex-start',
+                minHeight: '100vh',
+                paddingTop: '50px'
+            }}
+        >
+            <Paper
+                elevation={3}
+                sx={{
+                    padding: '30px',
+                    borderRadius: '12px',
+                    textAlign: 'center',
+                    width: '100%',
+                    minHeight: '60vh', // Incrementé la altura mínima
+                }}
+            >
+                <Typography
+                    variant="h4"
+                    component="h1"
+                    sx={{
+                        color: '#003366',
+                        fontWeight: 'bold',
+                        marginBottom: '20px',
+                    }}
+                >
                     Iniciar Sesión
                 </Typography>
 
@@ -78,13 +104,29 @@ function Autentication() {
                         onChange={(e) => setPassword(e.target.value)}
                     />
 
-                    <Button type="submit" variant="contained" fullWidth sx={{ marginTop: '20px', backgroundColor: '#003366', '&:hover': { backgroundColor: '#00509E' } }}>
+                    <Button
+                        type="submit"
+                        variant="contained"
+                        fullWidth
+                        sx={{
+                            marginTop: '20px',
+                            backgroundColor: '#003366',
+                            '&:hover': { backgroundColor: '#00509E' },
+                        }}
+                    >
                         Iniciar Sesión
                     </Button>
                 </form>
 
                 <Box sx={{ marginTop: '20px' }}>
-                    <Link href="#" sx={{ color: '#00509E', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}>
+                    <Link
+                        href="#"
+                        sx={{
+                            color: '#00509E',
+                            textDecoration: 'none',
+                            '&:hover': { textDecoration: 'underline' },
+                        }}
+                    >
                         ¿Olvidaste tu contraseña?
                     </Link>
                 </Box>
