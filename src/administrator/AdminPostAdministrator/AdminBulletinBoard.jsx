@@ -160,28 +160,24 @@ const AdminBulletinBoard = () => {
                                     {/* Reacciones */}
                                     <Box sx={{ display: 'flex', justifyContent: 'space-around', marginTop: '15px' }}>
                                         <Button
-                                            onClick={() => handleReaction(post.postId, 'like')}
                                             sx={{ color: '#4CAF50', '&:hover': { backgroundColor: '#E8F5E9' } }}
                                         >
-                                            👍 {post.reactions?.like || 0}
+                                            👍 {post.reactions?.THUMBS_UP || 0}
                                         </Button>
                                         <Button
-                                            onClick={() => handleReaction(post.postId, 'dislike')}
                                             sx={{ color: '#F44336', '&:hover': { backgroundColor: '#FFEBEE' } }}
                                         >
-                                            👎 {post.reactions?.dislike || 0}
+                                            👎 {post.reactions?.THUMBS_DOWN || 0}
                                         </Button>
                                         <Button
-                                            onClick={() => handleReaction(post.postId, 'clap')}
                                             sx={{ color: '#FFC107', '&:hover': { backgroundColor: '#FFF8E1' } }}
                                         >
-                                            👏 {post.reactions?.clap || 0}
+                                            👏 {post.reactions?.CLAPS || 0}
                                         </Button>
                                         <Button
-                                            onClick={() => handleReaction(post.postId, 'cry')}
                                             sx={{ color: '#2196F3', '&:hover': { backgroundColor: '#E3F2FD' } }}
                                         >
-                                            😢 {post.reactions?.cry || 0}
+                                            😢 {post.reactions?.SAD_FACE || 0}
                                         </Button>
                                     </Box>
                                 </Card>

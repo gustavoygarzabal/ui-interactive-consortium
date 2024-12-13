@@ -26,8 +26,17 @@ const AdminBulletinBoard = () => {
     // Función para manejar el clic en las reacciones
     const handleReaction = async (postId, reactionType) => {
         try {
-            const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/posts/${postId}/reactions`, {
-                reaction: reactionType
+            const token = localStorage.getItem('token');
+            if (!token) {
+                setLoading(false);
+                return;
+            }
+
+            console.log('reactionType', reactionType);
+            const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/posts/${postId}/react?reaction=${reactionType}`, null,{
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
             });
             // Actualizar el estado de las reacciones para el post
             setPosts(posts.map(post =>
@@ -169,28 +178,28 @@ const AdminBulletinBoard = () => {
                                     {/* Reacciones */}
                                     <Box sx={{ display: 'flex', justifyContent: 'space-around', marginTop: '15px' }}>
                                         <Button
-                                            onClick={() => handleReaction(post.postId, 'like')}
+                                            onClick={() => handleReaction(post.postId, 'THUMBS_UP')}
                                             sx={{ color: '#4CAF50', '&:hover': { backgroundColor: '#E8F5E9' } }}
                                         >
-                                            👍 {post.reactions?.like || 0}
+                                            👍 {post.reactions?.THUMBS_UP || 0}
                                         </Button>
                                         <Button
-                                            onClick={() => handleReaction(post.postId, 'dislike')}
+                                            onClick={() => handleReaction(post.postId, 'THUMBS_DOWN')}
                                             sx={{ color: '#F44336', '&:hover': { backgroundColor: '#FFEBEE' } }}
                                         >
-                                            👎 {post.reactions?.dislike || 0}
+                                            👎 {post.reactions?.THUMBS_DOWN || 0}
                                         </Button>
                                         <Button
-                                            onClick={() => handleReaction(post.postId, 'clap')}
+                                            onClick={() => handleReaction(post.postId, 'CLAPS')}
                                             sx={{ color: '#FFC107', '&:hover': { backgroundColor: '#FFF8E1' } }}
                                         >
-                                            👏 {post.reactions?.clap || 0}
+                                            👏 {post.reactions?.CLAPS || 0}
                                         </Button>
                                         <Button
-                                            onClick={() => handleReaction(post.postId, 'cry')}
+                                            onClick={() => handleReaction(post.postId, 'SAD_FACE')}
                                             sx={{ color: '#2196F3', '&:hover': { backgroundColor: '#E3F2FD' } }}
                                         >
-                                            😢 {post.reactions?.cry || 0}
+                                            😢 {post.reactions?.SAD_FACE || 0}
                                         </Button>
                                     </Box>
                                 </Card>
