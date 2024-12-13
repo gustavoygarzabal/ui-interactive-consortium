@@ -29,15 +29,35 @@ function AdminConsortiumList(){
     const navigate = useNavigate()
     const [uploadedImages, setUploadedImages] = useState({}); // Estado para manejar las imágenes subidas
 
-    const handleImageUpload = (event, consortiumId) => {
+    // TODO ajustar la carga de imagenes
+    const handleImageUpload = async (event, consortiumId) => {
         const file = event.target.files[0];
         if (file) {
-            const reader = new FileReader();
-            reader.onload = () => {
-                console.log(reader.result)
-                setUploadedImages((prev) => ({ ...prev, [consortiumId]: reader.result }));
-            };
-            reader.readAsDataURL(file);
+            const token = localStorage.getItem('token'); // Get the stored token
+            if (!token) {
+                alert("No estás autorizado. Por favor, inicia sesión.");
+                return; // Stop execution if no token
+            }
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const res = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/consortiums/${consortiumId}/upload`, formData, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'multipart/form-data'
+                    }
+                });
+
+                // Create a URL for the uploaded image file
+                const imageUrl = URL.createObjectURL(file);
+                setUploadedImages((prev) => ({ ...prev, [consortiumId]: imageUrl }));
+
+            } catch (error) {
+                console.error("Error uploading image:", error);
+                alert("Ocurrió un error al intentar subir la imagen.");
+            }
         }
     };
 
@@ -54,6 +74,7 @@ function AdminConsortiumList(){
         setRowsPerPage(+event.target.value);
         setPage(0);
     };
+
     useEffect(() => {
         if (consortiumName === '' && consortiumCity === '' && consortiumProvince === ''){
             getAllConsortiumByIdAdmin()
@@ -96,6 +117,32 @@ function AdminConsortiumList(){
                     province: consortium.province
                 };
             }));
+
+            // Create an array of promises for the image download requests
+            const imagePromises = consortiums.map(async (consortium) => {
+                if (consortium.imagePath !== null) {
+                    const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/consortiums/${consortium.consortiumId}/download`, {
+                        headers: {
+                            Authorization: `Bearer ${token}` // Include the token in the headers
+                        },
+                        responseType: 'blob' // Ensure the response is a Blob
+                    });
+                    const imageBlob = res.data;
+                    const imageUrl = URL.createObjectURL(imageBlob);
+                    return { consortiumId: consortium.consortiumId, imageUrl };
+                }
+                return null;
+            });
+
+            // Wait for all the promises to resolve
+            const images = await Promise.all(imagePromises);
+
+            // Update the state with the downloaded images
+            images.forEach(image => {
+                if (image) {
+                    setUploadedImages((prev) => ({ ...prev, [image.consortiumId]: image.imageUrl }));
+                }
+            });
         } catch (error) {
             console.error("Error al obtener los consorcios:", error);
             alert("Ocurrió un error al intentar obtener los consorcios.");
@@ -136,24 +183,24 @@ function AdminConsortiumList(){
         }
     };
 
-    return(
+    return (
         <div>
             <Box
                 sx={{
                     display: 'flex',
-                    minHeight: '100vh', // Asegura que el contenedor ocupe toda la altura de la pantalla
+                    minHeight: '100vh', // Ensure the container takes up the full height of the screen
                 }}
             >
                 {/* Sidebar */}
                 <AdminGallerySidebar />
 
-                {/* Contenido principal */}
+                {/* Main content */}
                 <Box
                     sx={{
-                        flexGrow: 1, // Permite que este Box ocupe el espacio restante
-                        marginLeft: '240px', // Mismo ancho que el Sidebar para evitar la superposición
+                        flexGrow: 1, // Allow this Box to take up the remaining space
+                        marginLeft: '240px', // Same width as the Sidebar to avoid overlap
                         padding: '20px',
-                        backgroundColor: '#ffffff', // Fondo principal
+                        backgroundColor: '#ffffff', // Main background
                         minHeight: '100vh',
                     }}
                 >
@@ -162,7 +209,7 @@ function AdminConsortiumList(){
                         component="h1"
                         sx={{
                             fontWeight: 'bold',
-                            color: '#002776', // Azul oscuro
+                            color: '#002776', // Dark blue
                             textAlign: 'center',
                             marginBottom: '20px',
                         }}
@@ -170,8 +217,8 @@ function AdminConsortiumList(){
                         Mis Consorcios
                     </Typography>
 
-                    <Grid container spacing={3} justifyContent="center">
-                        {allConsortiumByAdmin.map((consortium, index) => (
+                    <Grid container spacing={3}>
+                        {allConsortiumByAdmin.map((consortium) => (
                             <Grid
                                 item
                                 xs={12}
@@ -179,91 +226,80 @@ function AdminConsortiumList(){
                                 md={allConsortiumByAdmin.length === 1 ? 8 : 4}
                                 key={consortium.consortiumId}
                             >
-                                <Card
-                                    sx={{
-                                        maxWidth: 400,
-                                        margin: '0 auto', // Centrar las tarjetas cuando hay pocas
-                                        backgroundColor: '#FFF', // Fondo de las tarjetas
-                                        border: `1px solid #B2675E`, // Borde con el color marrón
-                                        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-                                    }}
-                                >
-                                    {/* Mostrar la imagen cargada, si existe */}
-                                    {uploadedImages[consortium.consortiumId] ? (
-                                        <CardMedia
-                                            component="img"
-                                            height="220"
-                                            image={uploadedImages[consortium.consortiumId]} // Imagen cargada
-                                            alt={consortium.name}
-                                        />
-                                    ) : (
-                                        <CardMedia
-                                            component="img"
-                                            height="220"
-                                            image={consortium.image || 'https://via.placeholder.com/400x220'} // Imagen predeterminada
-                                            alt={consortium.name}
-                                        />
-                                    )}
-                                    <CardContent>
-                                        <Typography
-                                            variant="h6"
-                                            component="div"
-                                            sx={{
-                                                color: '#002776', // Azul oscuro
-                                                fontWeight: 'bold',
-                                            }}
-                                        >
-                                            {consortium.name}
-                                        </Typography>
-                                        <Typography
-                                            variant="body2"
-                                            color="text.secondary"
-                                            sx={{ color: '#B2675E' }}
-                                        >
-                                            <LocationOn sx={{ fontSize: 20, color: '#002776' }} />
-                                            {`${consortium.address}, ${consortium.city}, ${consortium.province}`}
-                                        </Typography>
-                                    </CardContent>
-                                    <CardActions>
-                                        <Button
-                                            size="medium"
-                                            variant="contained"
-                                            onClick={() => handleAdminClick(consortium.consortiumId)}
-                                            sx={{
-                                                backgroundColor: '#002776',
-                                                color: '#FFF',
-                                                borderRadius: '20px', // Bordes redondeados
-                                                padding: '10px 20px', // Más relleno para un diseño moderno
-                                                fontWeight: 'bold',
-                                                boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)', // Sombra ligera
-                                                transition: 'all 0.3s ease', // Animación suave
-                                                '&:hover': {
-                                                    backgroundColor: '#001B5E',
-                                                    transform: 'translateY(-2px)', // Efecto de "levitación" al pasar el mouse
-                                                    boxShadow: '0px 6px 8px rgba(0, 0, 0, 0.2)', // Sombra más intensa
-                                                },
-                                            }}
-                                        >
-                                            Administrar
-                                        </Button>
-                                        <IconButton component="label">
-                                            <input
-                                                type="file"
-                                                accept="image/*"
-                                                style={{ display: 'none' }}
-                                                onChange={(event) => handleImageUpload(event, consortium.consortiumId)}
+                                <Box onClick={() => handleAdminClick(consortium.consortiumId)} sx={{ cursor: 'pointer' }}>
+                                    <Card
+                                        sx={{
+                                            maxWidth: 400,
+                                            margin: '0 auto', // Center the cards when there are few
+                                            backgroundColor: 'transparent',
+                                            boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
+                                            transition: 'transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out',
+                                            '&:hover': {
+                                                transform: 'scale(1.05)',
+                                                boxShadow: '0px 16px 32px rgba(184, 218, 227, 0.8)',
+                                            },
+                                        }}
+                                    >
+                                        {/* Show the uploaded image if it exists */}
+                                        {uploadedImages[consortium.consortiumId] ? (
+                                            <CardMedia
+                                                component="img"
+                                                height="220"
+                                                image={uploadedImages[consortium.consortiumId]} // Uploaded image
+                                                alt={consortium.name}
                                             />
-                                            <PhotoCameraIcon sx={{ color: '#002776' }} /> {/* Icono para "Cambiar foto" */}
-                                        </IconButton>
-                                    </CardActions>
-                                </Card>
+                                        ) : (
+                                            <CardMedia
+                                                component="img"
+                                                height="220"
+                                                image={consortium.image || '/images/consortiumPlaceHolderl2.webp'} // Default image
+                                                alt={consortium.name}
+                                            />
+                                        )}
+                                        <CardContent>
+                                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                <Box>
+                                                    <Typography
+                                                        variant="h6"
+                                                        component="div"
+                                                        sx={{
+                                                            color: '#002776', // Dark blue
+                                                            fontWeight: 'bold',
+                                                            marginBottom: '8px',
+                                                            marginLeft: '3px',
+                                                        }}
+                                                    >
+                                                        {consortium.name}
+                                                    </Typography>
+                                                    <Typography
+                                                        variant="body2"
+                                                        color="text.secondary"
+                                                        sx={{ color: '#002776', display: 'flex', alignItems: 'center' }}
+                                                    >
+                                                        <LocationOn sx={{ fontSize: 20, color: '#002776', marginRight: '5px'}} />
+                                                        {`${consortium.address}, ${consortium.city}, ${consortium.province}`}
+                                                    </Typography>
+                                                </Box>
+                                                <IconButton component="label" onClick={(e) => e.stopPropagation()}>
+                                                    <input
+                                                        type="file"
+                                                        accept="image/*"
+                                                        style={{ display: 'none' }}
+                                                        onChange={(event) => handleImageUpload(event, consortium.consortiumId)}
+                                                    />
+                                                    <PhotoCameraIcon sx={{ color: '#002776' }} /> {/* Icon for "Change photo" */}
+                                                </IconButton>
+                                            </Box>
+                                        </CardContent>
+                                    </Card>
+                                </Box>
                             </Grid>
                         ))}
                     </Grid>
                 </Box>
             </Box>
         </div>
-    )
+    );
 }
 
 export default AdminConsortiumList
