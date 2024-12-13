@@ -1,4 +1,4 @@
-import React, {useContext} from 'react';
+import React, {useContext, useEffect} from 'react';
 import { Box, Container, Grid, Card, CardActionArea, CardContent, Typography, Paper } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 
@@ -27,9 +27,12 @@ const options = [
 
 
 const Dashboard = () => {
-    const {consortiumName} = useContext(AdminManageContext)
+    const {consortiumName, consortiumIdState, getAConsortiumByIdConsortium} = useContext(AdminManageContext)
     const navigate = useNavigate();
 
+    useEffect(() => {
+        getAConsortiumByIdConsortium();
+    }, [consortiumIdState]);
 
     return (
         <Box
@@ -71,7 +74,7 @@ const Dashboard = () => {
                         Panel de Gestión de {consortiumName}
                     </Typography>
 
-                    <Grid container spacing={3} justifyContent="center"> {/* Se aumentó el spacing entre las tarjetas */}
+                    <Grid container spacing={3} justifyContent="center" maxWidth="1000px"> {/* Se aumentó el spacing entre las tarjetas */}
                         {options.map((option, index) => (
                             <Grid
                                 item

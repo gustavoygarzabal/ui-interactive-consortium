@@ -30,7 +30,8 @@ import {jwtDecode} from "jwt-decode";
 import { useSnackbar } from 'notistack';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import AdminGallerySidebar from "../AdminGallerySidebar.jsx";
-import {AccessTime, Assessment, Assignment, AttachMoney, Person} from "@mui/icons-material";
+import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
+import { Pending, CheckCircle, AccessTime, Assessment, Assignment, AttachMoney, Person} from "@mui/icons-material";
 
 
 const columns = [
@@ -310,86 +311,112 @@ function AdminMaintenanceFeesPayments(){
                         {/* Tabla de resumen */}
                         <Box sx={{ flexGrow: 1, p: 3 }}>
                             <Grid container spacing={3}>
-                                {/* Active Users Card */}
-                                <Grid item xs={12} sm={6} md={2.4}>
-                                    <Card>
-                                        <CardContent sx={{ textAlign: 'center', py: 2 }}>
-                                            <Typography variant="h4" component="div" sx={{ mb: 1 }}>
-                                                4
-                                            </Typography>
-                                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
-                                                <Person color="primary" />
-                                                <Typography color="text.secondary" variant="body2">
-                                                    Departamentos
-                                                </Typography>
+                                {/* PENDING Card */}
+                                <Grid item xs={12} sm={6} md={4}>
+                                    <Card sx={{
+                                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)',
+                                        transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
+                                        '&:hover': {
+                                            transform: 'translateY(-4px)',
+                                            boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1)',
+                                        },
+                                    }}>
+                                        <CardContent>
+                                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                    <Pending color="warning" />
+                                                    <Typography variant="subtitle1" color="warning.main" sx={{ fontWeight: 'bold' }}>
+                                                        PENDIENTES
+                                                    </Typography>
+                                                </Box>
+                                                {/*<Typography variant="caption" sx={{ bgcolor: 'action.hover', px: 1, py: 0.5, borderRadius: 1 }}>*/}
+                                                {/*    Status*/}
+                                                {/*</Typography>*/}
+                                            </Box>
+                                            <Box sx={{ mb: 2 }}>
+                                                <Typography variant="caption" color="text.secondary">CANTIDAD</Typography>
+                                                <Typography variant="h4" component="div">15</Typography>
+                                            </Box>
+                                            <Box>
+                                                <Typography variant="caption" color="text.secondary">MONTO</Typography>
+                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                                    <AttachMoney color="action" />
+                                                    <Typography variant="h4" component="div">7,500</Typography>
+                                                </Box>
                                             </Box>
                                         </CardContent>
                                     </Card>
                                 </Grid>
 
-                                {/* Minutes Card */}
-                                <Grid item xs={12} sm={6} md={2.4}>
-                                    <Card>
-                                        <CardContent sx={{ textAlign: 'center', py: 2 }}>
-                                            <Typography variant="h4" component="div" sx={{ mb: 1 }}>
-                                                3
-                                            </Typography>
-                                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
-                                                <AccessTime color="primary" />
-                                                <Typography color="text.secondary" variant="body2">
-                                                    Pendientes
-                                                </Typography>
+                                {/* PAID Card */}
+                                <Grid item xs={12} sm={6} md={4}>
+                                    <Card sx={{
+                                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)',
+                                        transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
+                                        '&:hover': {
+                                            transform: 'translateY(-4px)',
+                                            boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1)',
+                                        },
+                                    }}>
+                                        <CardContent>
+                                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                    <CheckCircle color="success" />
+                                                    <Typography variant="subtitle1" color="success.main" sx={{ fontWeight: 'bold' }}>
+                                                        PAGADAS
+                                                    </Typography>
+                                                </Box>
+                                                {/*<Typography variant="caption" sx={{ bgcolor: 'action.hover', px: 1, py: 0.5, borderRadius: 1 }}>*/}
+                                                {/*    Status*/}
+                                                {/*</Typography>*/}
+                                            </Box>
+                                            <Box sx={{ mb: 2 }}>
+                                                <Typography variant="caption" color="text.secondary">CANTIDAD</Typography>
+                                                <Typography variant="h4" component="div">42</Typography>
+                                            </Box>
+                                            <Box>
+                                                <Typography variant="caption" color="text.secondary">MONTO</Typography>
+                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                                    <AttachMoney color="action" />
+                                                    <Typography variant="h4" component="div">21,000</Typography>
+                                                </Box>
                                             </Box>
                                         </CardContent>
                                     </Card>
                                 </Grid>
 
-                                {/* Pending Card */}
-                                <Grid item xs={12} sm={6} md={2.4}>
-                                    <Card>
-                                        <CardContent sx={{ textAlign: 'center', py: 2 }}>
-                                            <Typography variant="h4" component="div" sx={{ mb: 1 }}>
-                                                1
-                                            </Typography>
-                                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
-                                                <Assignment color="primary" />
-                                                <Typography color="text.secondary" variant="body2">
-                                                    Pagados
-                                                </Typography>
+                                {/* EXPIRED Card */}
+                                <Grid item xs={12} sm={6} md={4}>
+                                    <Card sx={{
+                                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)',
+                                        transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
+                                        '&:hover': {
+                                            transform: 'translateY(-4px)',
+                                            boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1)',
+                                        },
+                                    }}>
+                                        <CardContent>
+                                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                    <AccountBalanceIcon color="primary" />
+                                                    <Typography variant="subtitle1" color="primary" sx={{ fontWeight: 'bold' }}>
+                                                        TOTAL
+                                                    </Typography>
+                                                </Box>
+                                                {/*<Typography variant="caption" sx={{ bgcolor: 'action.hover', px: 1, py: 0.5, borderRadius: 1 }}>*/}
+                                                {/*    Status*/}
+                                                {/*</Typography>*/}
                                             </Box>
-                                        </CardContent>
-                                    </Card>
-                                </Grid>
-
-                                {/* Reports Card */}
-                                <Grid item xs={12} sm={6} md={2.4}>
-                                    <Card>
-                                        <CardContent sx={{ textAlign: 'center', py: 2 }}>
-                                            <Typography variant="h4" component="div" sx={{ mb: 1 }}>
-                                                $150.000
-                                            </Typography>
-                                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
-                                                <AttachMoney color="primary" />
-                                                <Typography color="text.secondary" variant="body2">
-                                                    Monto
-                                                </Typography>
+                                            <Box sx={{ mb: 2 }}>
+                                                <Typography variant="caption" color="text.secondary">CANTIDAD</Typography>
+                                                <Typography variant="h4" component="div">8</Typography>
                                             </Box>
-                                        </CardContent>
-                                    </Card>
-                                </Grid>
-
-                                {/* Total Card */}
-                                <Grid item xs={12} sm={6} md={2.4}>
-                                    <Card>
-                                        <CardContent sx={{ textAlign: 'center', py: 2 }}>
-                                            <Typography variant="h4" component="div" sx={{ mb: 1 }}>
-                                                $1.652.236
-                                            </Typography>
-                                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
-                                                <AttachMoney color="primary" />
-                                                <Typography color="text.secondary" variant="body2">
-                                                    Total
-                                                </Typography>
+                                            <Box>
+                                                <Typography variant="caption" color="text.secondary">MONTO</Typography>
+                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                                    <AttachMoney color="action" />
+                                                    <Typography variant="h4" component="div">4,000</Typography>
+                                                </Box>
                                             </Box>
                                         </CardContent>
                                     </Card>
