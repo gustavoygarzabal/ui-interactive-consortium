@@ -1,189 +1,214 @@
 import React, {useState, useEffect, useContext} from 'react';
 import axios from 'axios';
-import {Paper, Box, Typography, List, ListItem, ListItemText, Divider, Button} from '@mui/material';
+import {
+    Paper,
+    Box,
+    Typography,
+    List,
+    ListItem,
+    ListItemText,
+    Divider,
+    Button,
+    CircularProgress,
+    Card, CardContent
+} from '@mui/material';
 import {jwtDecode} from "jwt-decode";
 import { useNavigate } from 'react-router-dom'
-import {ArrowBack} from "@mui/icons-material";
 import {ResidentManageContext} from "../ResidentManageContext.jsx";
 
+
 const AdminBulletinBoard = () => {
-    const {consortiumName, consortiumIdState} = useContext(ResidentManageContext)
+    const { consortiumName, consortiumIdState } = useContext(ResidentManageContext);
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(true);
-    const navigate = useNavigate()
+    const navigate = useNavigate();
 
-    // Función para cargar los posts
+    // Función para manejar el clic en las reacciones
+    const handleReaction = async (postId, reactionType) => {
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                setLoading(false);
+                return;
+            }
+
+            console.log('reactionType', reactionType);
+            const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/posts/${postId}/react?reaction=${reactionType}`, null,{
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            // Actualizar el estado de las reacciones para el post
+            setPosts(posts.map(post =>
+                post.postId === postId ? { ...post, reactions: response.data.reactions } : post
+            ));
+        } catch (error) {
+            console.error("Error al agregar la reacción:", error);
+        }
+    };
+
     useEffect(() => {
         const fetchPosts = async () => {
             const token = localStorage.getItem('token');
             if (!token) {
-                setError('No estás autorizado. Por favor, inicia sesión.');
                 setLoading(false);
-                return; // Detiene la ejecución si no hay token
+                return;
             }
 
-            // Decodificar el token para verificar el rol
             const decodedToken = jwtDecode(token);
-            const isAdmin = decodedToken?.role?.includes('ROLE_RESIDENT');
-            if (!isAdmin) {
-                setError('No tienes permisos para ver los posts.');
+            const isResident = decodedToken?.role?.includes('ROLE_RESIDENT');
+            if (!isResident) {
                 setLoading(false);
-                return; // Detiene la ejecución si no tiene el rol ROLE_ADMIN
+                return;
             }
 
             try {
                 const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/posts`, {
                     params: { idConsortium: consortiumIdState },
                     headers: {
-                        Authorization: `Bearer ${token}`, // Incluir el token en los encabezados
+                        Authorization: `Bearer ${token}`,
                     },
                 });
-
-                // Ordenar los posts por fecha de creación (más reciente primero)
                 const sortedPosts = response.data.content.sort(
                     (a, b) => new Date(b.creationPostDate) - new Date(a.creationPostDate)
                 );
                 setPosts(sortedPosts);
             } catch (error) {
-                setError('Error al cargar los posts.');
-                console.error('Error al cargar los posts:', error);
+                setLoading(false);
+                console.error("Error al cargar los posts:", error);
             } finally {
                 setLoading(false);
             }
         };
-
         fetchPosts();
-    }, []);  // El array vacío indica que solo se ejecutará una vez al cargar el componente.
+    }, []);
 
-    const handleGoBack = () => {
-        navigate('/admin/management/publicaciones'); // Redirige a la página de publicaciones
-    };
+
 
     return (
-        <>
-            <Box sx={{ display: 'flex', justifyContent: 'flex-start', padding: '20px' }}>
-                <Button
-                    variant="contained" // Cambia a un botón con fondo
-                    color="primary"
-                    onClick={handleGoBack}
-                    sx={{
-                        borderRadius: '20px', // Bordes redondeados
-                        padding: '10px 20px', // Aumenta el tamaño del botón
-                        textTransform: 'none', // Elimina la transformación del texto
-                        backgroundColor: '#002776', // Azul Francia oscuro
-                        '&:hover': {
-                            backgroundColor: '#001B5E', // Cambia el color al pasar el ratón
-                        },
-                        boxShadow: 3, // Añade sombra
-                    }}
-                    startIcon={<ArrowBack />} // Añade el icono de flecha hacia atrás
-                >
-                    Atrás
-                </Button>
-            </Box>
-            {/* Título fuera del recuadro y alineado correctamente */}
-            <Box
-                sx={{
-                    padding: '20px',
-                    display: 'flex',
-                    justifyContent: 'center',
-                    textAlign: 'center',
-                    paddingX: { xs: '10px', sm: '20px', md: '40px' }, // Ajusta el padding horizontal según el tamaño de la pantalla
-                    marginTop: '20px', // Ajusta el margen superior para separarlo de otros componentes si es necesario
-                }}
-            >
-                <Typography
-                    variant="h6"
-                    component="h1"
-                    sx={{
-                        fontWeight: 'bold',
-                        color: '#002776', // El color del texto
-                        fontSize: { xs: '1.2rem', sm: '1.5rem', md: '1.8rem' }, // Ajusta el tamaño del texto
-                    }}
-                >
-                    Tablón de Anuncios de {consortiumName}
-                </Typography>
-            </Box>
+        <Box
+            sx={{
+                display: 'flex',
+                minHeight: '100vh', // Asegura que el contenedor ocupe toda la altura de la pantalla
+            }}
+        >
+            {/*<AdminGallerySidebar />*/}
 
-            {/* Contenedor de los posts */}
-            <Paper
-                elevation={2}
+            <Box
+                component="main"
                 sx={{
-                    padding: 3,
-                    margin: 'auto',
-                    marginTop: '20px',
-                    width: { xs: '95%', sm: '85%', md: '70%', lg: '60%' },
+                    flexGrow: 1, // Permite que este componente ocupe el espacio restante
+                    padding: { xs: '16px', sm: '24px' }, // Espaciado variable según el tamaño de la pantalla
+                    marginLeft: { xs: 0, sm: '240px' }, // Evita que el contenido se superponga al sidebar
+                    transition: 'margin-left 0.3s ease', // Suaviza la transición al cambiar de tamaño
                 }}
             >
-                {loading ? (
-                    <Typography align="center" variant="body1">
-                        Cargando anuncios...
-                    </Typography>
-                ) : posts.length === 0 ? (
-                    <Typography align="center" variant="body1">
-                        No hay anuncios publicados.
-                    </Typography>
-                ) : (
-                    <List sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                        {posts.map((post) => (
-                            <React.Fragment key={post.postId}>
-                                <ListItem
-                                    alignItems="flex-start"
+                <Box sx={{ padding: '20px', maxWidth: '1200px', margin: '0 auto' }}>
+                    {/* Título */}
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                        }}
+                    >
+                        <Typography
+                            variant="h6"
+                            component="h1"
+                            sx={{
+                                fontWeight: 'bold',
+                                color: '#003366',
+                                fontSize: { xs: '1.5rem', md: '2rem' },
+                                marginBottom: '20px',
+                            }}
+                        >
+                            Tablón de Anuncios de {consortiumName}
+                        </Typography>
+                    </Box>
+
+                    {/* Contenedor de los posts */}
+                    <Box
+                        sx={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', // Tamaño mínimo reducido
+                            gap: '30px', // Separación entre tarjetas
+                        }}
+                    >
+                        {loading ? (
+                            <Box sx={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
+                                <CircularProgress color="primary" />
+                            </Box>
+                        ) : posts.length === 0 ? (
+                            <Typography variant="body1" sx={{ textAlign: 'center', color: '#B2675E' }}>
+                                No hay anuncios publicados.
+                            </Typography>
+                        ) : (
+                            posts.map((post, index) => (
+                                <Card
+                                    key={post.postId}
                                     sx={{
-                                        width: '100%',
-                                        maxWidth: 600, // Limita el ancho máximo del post
+                                        backgroundColor: index % 2 === 0 ? '#BCE7FD' : '#FFD9C0', // Alternar colores de fondo
+                                        maxWidth: '300px', // Límite de ancho para mantener tamaño uniforme
+                                        height: 'auto',
                                         display: 'flex',
                                         flexDirection: 'column',
-                                        alignItems: 'center',
+                                        justifyContent: 'space-between',
+                                        boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
+                                        transition: 'transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out',
+                                        '&:hover': {
+                                            transform: 'scale(1.05)',
+                                            boxShadow: '0px 8px 16px rgba(0, 0, 0, 0.2)',
+                                        },
+                                        borderRadius: '12px',
+                                        padding: '16px',
                                     }}
                                 >
-                                    <ListItemText
-                                        primary={
-                                            <Typography
-                                                variant="h6"
-                                                style={{
-                                                    color: '#002776',
-                                                    textAlign: 'center', // Centra el título
-                                                }}
-                                            >
-                                                {post.title}
-                                            </Typography>
-                                        }
-                                        secondary={
-                                            <>
-                                                <Typography
-                                                    variant="body2"
-                                                    style={{
-                                                        marginBottom: '8px',
-                                                        textAlign: 'center', // Centra la fecha
-                                                        color: '#B2675E',
-                                                        fontWeight: 'bold',// Aplica el color a la fecha
-                                                    }}
-                                                >
-                                                    {`Publicado el: ${new Date(
-                                                        post.creationPostDate
-                                                    ).toLocaleString()}`}
-                                                </Typography>
-                                                <Typography
-                                                    variant="body1"
-                                                    style={{
-                                                        color: 'black',
-                                                        textAlign: 'center', // Centra el contenido
-                                                    }}
-                                                >
-                                                    {post.content}
-                                                </Typography>
-                                            </>
-                                        }
-                                    />
-                                </ListItem>
-                                <Divider style={{ width: '100%' }} />
-                            </React.Fragment>
-                        ))}
-                    </List>
-                )}
-            </Paper>
-        </>
+                                    <CardContent>
+                                        <Typography variant="h5" sx={{ color: '#002776', fontWeight: '600' }}>
+                                            {post.title}
+                                        </Typography>
+                                        <Typography variant="body2" sx={{ color: '#6E6E6E', marginTop: '8px' }}>
+                                            {`Publicado el: ${new Date(post.creationPostDate).toLocaleString()}`}
+                                        </Typography>
+                                        <Typography variant="body1" sx={{ color: '#333', marginTop: '15px', lineHeight: '1.5' }}>
+                                            {post.content}
+                                        </Typography>
+                                    </CardContent>
+
+                                    {/* Reacciones */}
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-around', marginTop: '15px' }}>
+                                        <Button
+                                            onClick={() => handleReaction(post.postId, 'THUMBS_UP')}
+                                            sx={{ color: '#4CAF50', '&:hover': { backgroundColor: '#E8F5E9' } }}
+                                        >
+                                            👍 {post.reactions?.THUMBS_UP || 0}
+                                        </Button>
+                                        <Button
+                                            onClick={() => handleReaction(post.postId, 'THUMBS_DOWN')}
+                                            sx={{ color: '#F44336', '&:hover': { backgroundColor: '#FFEBEE' } }}
+                                        >
+                                            👎 {post.reactions?.THUMBS_DOWN || 0}
+                                        </Button>
+                                        <Button
+                                            onClick={() => handleReaction(post.postId, 'CLAPS')}
+                                            sx={{ color: '#FFC107', '&:hover': { backgroundColor: '#FFF8E1' } }}
+                                        >
+                                            👏 {post.reactions?.CLAPS || 0}
+                                        </Button>
+                                        <Button
+                                            onClick={() => handleReaction(post.postId, 'SAD_FACE')}
+                                            sx={{ color: '#2196F3', '&:hover': { backgroundColor: '#E3F2FD' } }}
+                                        >
+                                            😢 {post.reactions?.SAD_FACE || 0}
+                                        </Button>
+                                    </Box>
+                                </Card>
+                            ))
+                        )}
+                    </Box>
+                </Box>
+            </Box>
+        </Box>
     );
 };
 

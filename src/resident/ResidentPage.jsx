@@ -4,6 +4,7 @@ import {ResidentManageContextProvider} from "./ResidentManageContext.jsx";
 import ResidentBulletinBoard from "./ResidentBulletinBoard/ResidentBulletinBoard.jsx";
 import ResidentConsortiumList from "./ResdientConsortiumList.jsx";
 import ResidentDashboard from "./ResidentDashboard.jsx";
+import ResidentMaintenanceFeePayments from "./ResidentMaintenanceFee/ResidentMaintenanceFeePayments.jsx";
 
 function ResidentPage(){
     return (
@@ -20,7 +21,7 @@ function ResidentPage(){
 
                 {/*<Route path="/reclamos" element={<AdminClaimManagement />} />*/}
 
-                {/*<Route path="/expensas" element={<AdminMaintenanceFeesAdministrator/>} />*/}
+                <Route path="/expensas" element={<ResidentMaintenanceFeePayments/>} />
 
                 {/*<Route path="/expensas/pago" element={<AdminMaintenanceFeePayments/>} />*/}
 

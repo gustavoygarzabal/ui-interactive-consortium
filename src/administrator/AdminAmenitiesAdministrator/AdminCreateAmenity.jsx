@@ -101,7 +101,30 @@ function AdminCreateAmenity(){
 
     return (
         <>
-            <Button variant="contained" startIcon={<AddIcon />} onClick={handleClickOpen} sx={{ backgroundColor: '#002776', '&:hover': { backgroundColor: '#001B5E' } }}>
+            <Button
+                variant="contained"
+                startIcon={<AddIcon />}
+                onClick={handleClickOpen}
+                sx={{
+                    backgroundColor: '#B2675E', // Color personalizado
+                    color: '#FFFFFF',
+                    fontWeight: 'bold',
+                    textTransform: 'none',
+                    borderRadius: '30px', // Bordes redondeados
+                    padding: '12px 24px', // Espacio interno reducido
+                    fontSize: '1.1rem', // Tamaño de fuente ligeramente más pequeño
+                    minWidth: '180px', // Tamaño mínimo ajustado
+                    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', // Sombra moderada
+                    transition: 'all 0.3s ease', // Transición suave
+                    '&:hover': {
+                        backgroundColor: '#A15D50', // Cambio de color al pasar el cursor
+                        boxShadow: '0 6px 10px rgba(0, 0, 0, 0.2)', // Sombra más prominente
+                    },
+                    '&:active': {
+                        backgroundColor: '#8A4A3D', // Cambio de color cuando se presiona
+                    },
+                }}
+            >
                 Nuevo
             </Button>
 
@@ -113,9 +136,16 @@ function AdminCreateAmenity(){
                     }
                 }}
             >
-                <DialogTitle sx={{ backgroundColor: '#E5E5E5',  color: '#002776', textAlign: 'center' }}>Nuevo Espacio Común</DialogTitle>
-                <DialogContent sx={{ backgroundColor: '#E5E5E5' }}>
-                    <Paper elevation={3} sx={{ padding: 4, backgroundColor: '#EDEDED',  marginTop: '10px' }}>
+                <DialogTitle sx={{
+                    backgroundColor: '#E5E5E5',
+                    color: '#002776',
+                    textAlign: 'center',
+                    padding: '20px 30px',
+                    borderBottom: '2px solid #028484',
+                    fontWeight: 'bold',
+                }}>Nuevo Espacio Común</DialogTitle>
+                <DialogContent sx={{ backgroundColor: '#F9F9F9' }}>
+                    <Paper elevation={3} sx={{ padding: 4, backgroundColor: '#F2F2F2', marginTop: '10px' }}>
                         <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2}}>
                             <Grid container spacing={2}>
                                 <Grid item xs={12} sm={6}>
@@ -131,17 +161,17 @@ function AdminCreateAmenity(){
                                         sx={{
                                             '& .MuiOutlinedInput-root': {
                                                 '& fieldset': {
-                                                    borderColor: '#002776',
+                                                    borderColor: '#028484',
                                                 },
                                                 '&:hover fieldset': {
-                                                    borderColor: '#002776',
+                                                    borderColor: '#028484',
                                                 },
                                                 '&.Mui-focused fieldset': {
-                                                    borderColor: '#002776',
+                                                    borderColor: '#028484',
                                                 },
                                             },
                                             '& label.Mui-focused': {
-                                                color: '#002776', // Cambia el color del label al enfocarse
+                                                color: '#028484', // Cambia el color del label al enfocarse
                                             },
                                         }}
                                         fullWidth
@@ -160,17 +190,17 @@ function AdminCreateAmenity(){
                                         sx={{
                                             '& .MuiOutlinedInput-root': {
                                                 '& fieldset': {
-                                                    borderColor: '#002776',
+                                                    borderColor: '#028484',
                                                 },
                                                 '&:hover fieldset': {
-                                                    borderColor: '#002776',
+                                                    borderColor: '#028484',
                                                 },
                                                 '&.Mui-focused fieldset': {
-                                                    borderColor: '#002776',
+                                                    borderColor: '#028484',
                                                 },
                                             },
                                             '& label.Mui-focused': {
-                                                color: '#002776', // Cambia el color del label al enfocarse
+                                                color: '#028484', // Cambia el color del label al enfocarse
                                             },
                                         }}
                                         fullWidth
@@ -180,11 +210,27 @@ function AdminCreateAmenity(){
                         </Box>
                     </Paper>
                 </DialogContent>
-                <DialogActions sx={{ backgroundColor: '#E5E5E5' }}>
-                    <Button onClick={handleClose} variant="contained" sx={{ backgroundColor: '#002776', '&:hover': { backgroundColor: '#001B5E' } }}>
+                <DialogActions sx={{ backgroundColor: '#F9F9F9', padding: '10px 20px' }}>
+                    <Button onClick={handleClose} variant="contained"  sx={{
+                        backgroundColor: '#B2675E',
+                        '&:hover': {
+                            backgroundColor: '#8E5346',
+                        },
+                        borderRadius: '25px',
+                        padding: '8px 20px',
+                        transition: 'background-color 0.3s ease',
+                    }}>
                         Cancelar
                     </Button>
-                    <Button type="submit" onClick={handleSubmit} variant="contained" sx={{ backgroundColor: '#228B22', '&:hover': { backgroundColor: '#228B22' } }} >
+                    <Button type="submit" onClick={handleSubmit} variant="contained"   sx={{
+                        backgroundColor: '#028484',
+                        '&:hover': {
+                            backgroundColor: '#026F6B',
+                        },
+                        borderRadius: '25px',
+                        padding: '8px 20px',
+                        transition: 'background-color 0.3s ease',
+                    }} >
                         Guardar
                     </Button>
 

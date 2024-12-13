@@ -209,6 +209,7 @@ export function AdminManageContextProvider(props){
                         amenityId: amenity.amenityId,
                         name: amenity.name,
                         maxBookings: amenity.maxBookings,
+                        imagePath: amenity.imagePath,
                     };
                 })
             );
