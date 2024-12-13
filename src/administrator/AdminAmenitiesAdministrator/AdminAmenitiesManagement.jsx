@@ -95,7 +95,7 @@ function AdminAmenitiesManagement(){
         setOpenAlert(false);
     };
 
-    useEffect(() => {
+    useEffect( () => {
         if (openEdit){
             setAmenitytInfo({
                 amenityId: idAmenityUpdate,
@@ -108,6 +108,46 @@ function AdminAmenitiesManagement(){
         }
 
     }, [idAmenityUpdate, editName, editMaxBooking]);
+
+    useEffect(() => {
+        if (allAmenities.length > 0) {
+            setAmenityPhotos();
+        }
+    }, [allAmenities]);
+
+    const setAmenityPhotos = async () => {
+        const token = localStorage.getItem('token'); // Get the stored token
+        if (!token) {
+            alert("No estás autorizado. Por favor, inicia sesión.");
+            return; // Stop execution if no token
+        }
+
+        const imagePromises = allAmenities.map(async (amenity) => {
+            console.log('path amenity id ' + amenity.amenityId + ' path '+ amenity.imagePath)
+            if (amenity.imagePath !== null) {
+                const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/Amenities/${amenity.amenityId}/download`, {
+                    headers: {
+                        Authorization: `Bearer ${token}` // Include the token in the headers
+                    },
+                    responseType: 'blob' // Ensure the response is a Blob
+                });
+                const imageBlob = res.data;
+                const imageUrl = URL.createObjectURL(imageBlob);
+                return { amenityId: amenity.amenityId, imageUrl };
+            }
+            return null;
+        });
+
+        // Wait for all the promises to resolve
+        const images = await Promise.all(imagePromises);
+
+        // Update the state with the downloaded images
+        images.forEach(image => {
+            if (image) {
+                setUploadedImages((prev) => ({ ...prev, [image.amenityId]: image.imageUrl }));
+            }
+        });
+    };
 
     const handleChange = (event) => {
         const name = event.target.name
@@ -220,6 +260,7 @@ function AdminAmenitiesManagement(){
                             amenityId: amenity.amenityId,
                             name: amenity.name,
                             maxBookings: amenity.maxBookings,
+
                         };
                     })
                 );
@@ -267,15 +308,34 @@ function AdminAmenitiesManagement(){
         }
     }
 
-    const handleImageUpload = (event, amenityId) => {
+    const handleImageUpload = async (event, amenityId) => {
         const file = event.target.files[0];
         if (file) {
-            const reader = new FileReader();
-            reader.onload = () => {
-                console.log(reader.result)
-                setUploadedImages((prev) => ({ ...prev, [amenityId]: reader.result }));
-            };
-            reader.readAsDataURL(file);
+            const token = localStorage.getItem('token'); // Get the stored token
+            if (!token) {
+                alert("No estás autorizado. Por favor, inicia sesión.");
+                return; // Stop execution if no token
+            }
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const res = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/Amenities/${amenityId}/upload`, formData, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'multipart/form-data'
+                    }
+                });
+
+                // Create a URL for the uploaded image file
+                const imageUrl = URL.createObjectURL(file);
+                setUploadedImages((prev) => ({ ...prev, [amenityId]: imageUrl }));
+
+            } catch (error) {
+                console.error("Error uploading image:", error);
+                alert("Ocurrió un error al intentar subir la imagen.");
+            }
         }
     };
 
@@ -334,9 +394,13 @@ function AdminAmenitiesManagement(){
                                             maxWidth: 400,
                                             mx: 'auto',
                                             textAlign: 'center',
-                                            backgroundColor: '#FFF', // Fondo de las tarjetas
-                                            border: `1px solid #B2675E`, // Borde con el color marrón
-                                            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+                                            backgroundColor: 'transparent',
+                                            boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
+                                            transition: 'transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out',
+                                            '&:hover': {
+                                                transform: 'scale(1.05)',
+                                                boxShadow: '0px 16px 32px rgba(184, 218, 227, 0.8)',
+                                            },
                                         }}
                                     >
                                         {/* Mostrar la imagen cargada, si existe */}
@@ -351,7 +415,7 @@ function AdminAmenitiesManagement(){
                                             <CardMedia
                                                 component="img"
                                                 height="220"
-                                                image={amenity.image || 'https://via.placeholder.com/400x220'} // Imagen predeterminada
+                                                image={amenity.image || '/images/poolPlaceholder.jpeg'} // Imagen predeterminada
                                                 alt={amenity.name}
                                             />
                                         )}

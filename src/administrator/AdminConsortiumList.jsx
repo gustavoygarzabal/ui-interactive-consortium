@@ -106,7 +106,6 @@ function AdminConsortiumList(){
                 }
             });
 
-            console.log(res.data);
             const consortiums = res.data.content;
             setAllConsortiumByAdmin(consortiums.map(consortium => {
                 return {
