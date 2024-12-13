@@ -43,7 +43,7 @@ const columns = [
 
 function AdminMaintenanceFeesPayments(){
     const {consortiumIdState, getAConsortiumByIdConsortium, consortiumName, getAllMaintenanceFeesPaymentByIdConsortium, period ,
-        setPeriod, allMaintenanceFeesPayment , setAllMaintenanceFeesPayment, } = useContext(AdminManageContext)
+        setPeriod, allMaintenanceFees, allMaintenanceFeesPayment , setAllMaintenanceFeesPayment} = useContext(AdminManageContext)
     const [rowsPerPage, setRowsPerPage] = React.useState(10);
     const [page, setPage] = React.useState(0);
     const [file, setFile] = useState(null);
@@ -56,6 +56,8 @@ function AdminMaintenanceFeesPayments(){
     const [openEditDialog, setOpenEditDialog] = useState(false);
     const [editOpen, setEditOpen] = useState(false);
     const [selectedStatus, setSelectedStatus] = useState("");
+    const [selectedMaintenanceFee, setSelectedMaintenanceFee] = useState("");
+    const [totalAmount, setTotalAmount] = useState('');
     const statusMapping = {
         PENDING: "Pendiente",
         PAID: "Pagado"
@@ -72,6 +74,12 @@ function AdminMaintenanceFeesPayments(){
         setPage(0);
     };
 
+    useEffect(() => {
+        let find = allMaintenanceFees.find(maintenanceFee => maintenanceFee.period === period);
+        console.log("TEST");
+        console.log(find);
+        setSelectedMaintenanceFee(find);
+    }, []);
 
     useEffect(() => {
         getAConsortiumByIdConsortium();
@@ -100,6 +108,11 @@ function AdminMaintenanceFeesPayments(){
         }
     };
 
+    const handleInputChange = (event) => {
+        setTotalAmount(event.target.value);
+    };
+
+
     const handleSaveChanges = async () => {
         setLoading(true);
         try {
@@ -108,6 +121,7 @@ function AdminMaintenanceFeesPayments(){
             // Construir el JSON que se enviará en maintenanceFeePaymentDto
             const maintenanceFeePaymentDto = {
                 maintenanceFeePaymentId: maintenanceFee.maintenanceFeePaymentId, // ID del pago seleccionado
+                amount: totalAmount, // Monto ingresado
                 maintenanceFee: {
                     maintenanceFeeId: maintenanceFee.maintenanceFeeId, // ID de la expensa seleccionada
                     consortium: {
@@ -307,123 +321,114 @@ function AdminMaintenanceFeesPayments(){
                     Pago de Expensas de {consortiumName}
                 </Typography>
 
-                    <Box sx={{ width: '100%', maxWidth: '1100px',  marginLeft: { xs: '40px', sm: '80px' } }}>
-                        {/* Tabla de resumen */}
-                        <Box sx={{ flexGrow: 1, p: 3 }}>
-                            <Grid container spacing={3}>
-                                {/* PENDING Card */}
-                                <Grid item xs={12} sm={6} md={4}>
-                                    <Card sx={{
-                                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)',
-                                        transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
-                                        '&:hover': {
-                                            transform: 'translateY(-4px)',
-                                            boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1)',
-                                        },
-                                    }}>
-                                        <CardContent>
-                                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                    <Pending color="warning" />
-                                                    <Typography variant="subtitle1" color="warning.main" sx={{ fontWeight: 'bold' }}>
-                                                        PENDIENTES
-                                                    </Typography>
+                        <Box sx={{ width: '100%', maxWidth: '1100px', marginLeft: { xs: '40px', sm: '80px' } }}>
+                            {/* Tabla de resumen */}
+                            <Box sx={{ flexGrow: 1, p: 3 }}>
+                                <Grid container spacing={3}>
+                                    {/* PENDING Card */}
+                                    <Grid item xs={12} sm={6} md={4}>
+                                        <Card sx={{
+                                            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)',
+                                            transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
+                                            '&:hover': {
+                                                transform: 'translateY(-4px)',
+                                                boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1)',
+                                            },
+                                        }}>
+                                            <CardContent>
+                                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                        <Pending color="warning" />
+                                                        <Typography variant="subtitle1" color="warning.main" sx={{ fontWeight: 'bold' }}>
+                                                            PENDIENTES
+                                                        </Typography>
+                                                    </Box>
                                                 </Box>
-                                                {/*<Typography variant="caption" sx={{ bgcolor: 'action.hover', px: 1, py: 0.5, borderRadius: 1 }}>*/}
-                                                {/*    Status*/}
-                                                {/*</Typography>*/}
-                                            </Box>
-                                            <Box sx={{ mb: 2 }}>
-                                                <Typography variant="caption" color="text.secondary">CANTIDAD</Typography>
-                                                <Typography variant="h4" component="div">15</Typography>
-                                            </Box>
-                                            <Box>
-                                                <Typography variant="caption" color="text.secondary">MONTO</Typography>
-                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                                    <AttachMoney color="action" />
-                                                    <Typography variant="h4" component="div">7,500</Typography>
+                                                <Box sx={{ mb: 2 }}>
+                                                    <Typography variant="caption" color="text.secondary">CANTIDAD</Typography>
+                                                    <Typography variant="h4" component="div">{selectedMaintenanceFee?.resume?.pendingCount || 0}</Typography>
                                                 </Box>
-                                            </Box>
-                                        </CardContent>
-                                    </Card>
-                                </Grid>
+                                                <Box>
+                                                    <Typography variant="caption" color="text.secondary">MONTO</Typography>
+                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                                        <AttachMoney color="action" />
+                                                        <Typography variant="h4" component="div">{selectedMaintenanceFee?.resume?.pendingAmount || 0}</Typography>
+                                                    </Box>
+                                                </Box>
+                                            </CardContent>
+                                        </Card>
+                                    </Grid>
 
-                                {/* PAID Card */}
-                                <Grid item xs={12} sm={6} md={4}>
-                                    <Card sx={{
-                                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)',
-                                        transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
-                                        '&:hover': {
-                                            transform: 'translateY(-4px)',
-                                            boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1)',
-                                        },
-                                    }}>
-                                        <CardContent>
-                                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                    <CheckCircle color="success" />
-                                                    <Typography variant="subtitle1" color="success.main" sx={{ fontWeight: 'bold' }}>
-                                                        PAGADAS
-                                                    </Typography>
+                                    {/* PAID Card */}
+                                    <Grid item xs={12} sm={6} md={4}>
+                                        <Card sx={{
+                                            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)',
+                                            transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
+                                            '&:hover': {
+                                                transform: 'translateY(-4px)',
+                                                boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1)',
+                                            },
+                                        }}>
+                                            <CardContent>
+                                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                        <CheckCircle color="success" />
+                                                        <Typography variant="subtitle1" color="success.main" sx={{ fontWeight: 'bold' }}>
+                                                            PAGADAS
+                                                        </Typography>
+                                                    </Box>
                                                 </Box>
-                                                {/*<Typography variant="caption" sx={{ bgcolor: 'action.hover', px: 1, py: 0.5, borderRadius: 1 }}>*/}
-                                                {/*    Status*/}
-                                                {/*</Typography>*/}
-                                            </Box>
-                                            <Box sx={{ mb: 2 }}>
-                                                <Typography variant="caption" color="text.secondary">CANTIDAD</Typography>
-                                                <Typography variant="h4" component="div">42</Typography>
-                                            </Box>
-                                            <Box>
-                                                <Typography variant="caption" color="text.secondary">MONTO</Typography>
-                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                                    <AttachMoney color="action" />
-                                                    <Typography variant="h4" component="div">21,000</Typography>
+                                                <Box sx={{ mb: 2 }}>
+                                                    <Typography variant="caption" color="text.secondary">CANTIDAD</Typography>
+                                                    <Typography variant="h4" component="div">{selectedMaintenanceFee?.resume?.paymentCount || 0}</Typography>
                                                 </Box>
-                                            </Box>
-                                        </CardContent>
-                                    </Card>
-                                </Grid>
+                                                <Box>
+                                                    <Typography variant="caption" color="text.secondary">MONTO</Typography>
+                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                                        <AttachMoney color="action" />
+                                                        <Typography variant="h4" component="div">{selectedMaintenanceFee?.resume?.paymentAmount || 0}</Typography>
+                                                    </Box>
+                                                </Box>
+                                            </CardContent>
+                                        </Card>
+                                    </Grid>
 
-                                {/* EXPIRED Card */}
-                                <Grid item xs={12} sm={6} md={4}>
-                                    <Card sx={{
-                                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)',
-                                        transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
-                                        '&:hover': {
-                                            transform: 'translateY(-4px)',
-                                            boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1)',
-                                        },
-                                    }}>
-                                        <CardContent>
-                                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                    <AccountBalanceIcon color="primary" />
-                                                    <Typography variant="subtitle1" color="primary" sx={{ fontWeight: 'bold' }}>
-                                                        TOTAL
-                                                    </Typography>
+                                    {/* EXPIRED Card */}
+                                    <Grid item xs={12} sm={6} md={4}>
+                                        <Card sx={{
+                                            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)',
+                                            transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
+                                            '&:hover': {
+                                                transform: 'translateY(-4px)',
+                                                boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1)',
+                                            },
+                                        }}>
+                                            <CardContent>
+                                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                        <AccountBalanceIcon color="primary" />
+                                                        <Typography variant="subtitle1" color="primary" sx={{ fontWeight: 'bold' }}>
+                                                            TOTAL
+                                                        </Typography>
+                                                    </Box>
                                                 </Box>
-                                                {/*<Typography variant="caption" sx={{ bgcolor: 'action.hover', px: 1, py: 0.5, borderRadius: 1 }}>*/}
-                                                {/*    Status*/}
-                                                {/*</Typography>*/}
-                                            </Box>
-                                            <Box sx={{ mb: 2 }}>
-                                                <Typography variant="caption" color="text.secondary">CANTIDAD</Typography>
-                                                <Typography variant="h4" component="div">8</Typography>
-                                            </Box>
-                                            <Box>
-                                                <Typography variant="caption" color="text.secondary">MONTO</Typography>
-                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                                    <AttachMoney color="action" />
-                                                    <Typography variant="h4" component="div">4,000</Typography>
+                                                <Box sx={{ mb: 2 }}>
+                                                    <Typography variant="caption" color="text.secondary">CANTIDAD</Typography>
+                                                    <Typography variant="h4" component="div">{selectedMaintenanceFee?.resume?.totalCount || 0}</Typography>
                                                 </Box>
-                                            </Box>
-                                        </CardContent>
-                                    </Card>
+                                                <Box>
+                                                    <Typography variant="caption" color="text.secondary">MONTO</Typography>
+                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                                        <AttachMoney color="action" />
+                                                        <Typography variant="h4" component="div">{selectedMaintenanceFee?.resume?.totalAmount || 0}</Typography>
+                                                    </Box>
+                                                </Box>
+                                            </CardContent>
+                                        </Card>
+                                    </Grid>
                                 </Grid>
-                            </Grid>
+                            </Box>
                         </Box>
-                    </Box>
 
                     <Box sx={{ width: '100%', maxWidth: '900px',  marginLeft: { xs: '40px', sm: '80px' } }}>
                         <TableContainer  sx={{
@@ -576,6 +581,15 @@ function AdminMaintenanceFeesPayments(){
                         )}
                     </Box>
                 </DialogContent>
+                <DialogActions>
+                    <TextField
+                        label="Ingrese Monto"
+                        variant="outlined"
+                        value={totalAmount}
+                        onChange={handleInputChange}
+                        sx={{ marginTop: '20px', marginBottom: '20px', width: '100%' }}
+                    />
+                </DialogActions>
                 <DialogActions>
                     <Button onClick={() => setEditOpen(false)}variant="contained" sx={{ backgroundColor: '#002776', '&:hover': { backgroundColor: '#001B5E' } }}>
                         Cancelar

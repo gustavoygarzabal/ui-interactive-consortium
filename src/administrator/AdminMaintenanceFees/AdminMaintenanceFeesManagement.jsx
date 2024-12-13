@@ -52,6 +52,7 @@ function AdminMaintenanceFeesManagement(){
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
     const [snackbarSeverity, setSnackbarSeverity] = useState('success');
+    const [totalAmount, setTotalAmount] = useState('');
     const navigate = useNavigate();
 
     const handleManageClick = (period) => {
@@ -108,6 +109,7 @@ function AdminMaintenanceFeesManagement(){
         const formData = new FormData();
         formData.append("file", file);
         formData.append("consortiumId", consortiumIdState); // Usamos el `consortiumIdState` que ya tienes
+        formData.append("totalAmount", totalAmount); // Usamos el `consortiumIdState` que ya tienes
         console.log([...formData.entries()]);
         setLoading(true);
 
@@ -176,6 +178,12 @@ function AdminMaintenanceFeesManagement(){
             console.error('Error al descargar el archivo:', error);
             alert('Hubo un error al descargar el archivo.');
         }
+    };
+
+    // Add a new state to store the input value
+
+    const handleInputChange = (event) => {
+        setTotalAmount(event.target.value);
     };
 
     const textFieldStyles = {
@@ -277,11 +285,22 @@ function AdminMaintenanceFeesManagement(){
                                 Seleccionar archivo
                                 <input type="file" hidden onChange={handleFileChange} accept="application/pdf" />
                             </Button>
+
                             {file && (
                                 <Typography variant="body2" sx={{ color: 'green', marginTop: '10px', display: 'flex', alignItems: 'center' }}>
                                     <CheckCircleIcon sx={{ marginRight: 1 }} /> Archivo seleccionado: {file.name}
                                 </Typography>
                             )}
+
+                            {/* Add the TextField component */}
+                            <TextField
+                                label="Ingrese Monto"
+                                variant="outlined"
+                                value={totalAmount}
+                                onChange={handleInputChange}
+                                sx={{ marginTop: '20px', marginBottom: '20px', width: '100%' }}
+                            />
+
                             <Button
                                 variant="contained"
                                 sx={{

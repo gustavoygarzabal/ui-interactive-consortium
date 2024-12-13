@@ -262,14 +262,14 @@ export function AdminManageContextProvider(props){
 
     const getAllMaintenanceFeesByIdConsortium= async () => {
         const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/maintenanceFee?consortiumId=${consortiumIdState}`)
-        console.log(res.data);
         const maintenanceFees = res.data.content;
         setAllMaintenanceFees(maintenanceFees.map(maintenanceFee =>{
             return {
                 maintenanceFeeId: maintenanceFee.maintenanceFeeId,
                 period: maintenanceFee.period,
                 fileName: maintenanceFee.fileName,
-                uploadDate: formatDate(maintenanceFee.uploadDate)
+                uploadDate: formatDate(maintenanceFee.uploadDate),
+                resume: maintenanceFee.resume,
             }
         }))
     }
