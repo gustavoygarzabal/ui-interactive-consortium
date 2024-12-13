@@ -8,7 +8,6 @@ import AdminAmenitiesManagement from "./AdminAmenitiesAdministrator/AdminAmeniti
 import AdminPostManagement from "./AdminPostAdministrator/AdminPostManagement.jsx";
 import AdminBulletinBoard from "./AdminPostAdministrator/AdminBulletinBoard.jsx";
 import AdminClaimManagement from "./AdminClaimAdministrator/AdminClaimManagement.jsx";
-import Expensas from "./AdminMaintenanceFees/AdminMaintenanceFeesManagement.jsx";
 import AdminMaintenanceFeesAdministrator from "./AdminMaintenanceFees/AdminMaintenanceFeesManagement.jsx";
 import AdminMaintenanceFeePayments from "./AdminMaintenanceFees/AdminMaintenanceFeePayments.jsx";
 

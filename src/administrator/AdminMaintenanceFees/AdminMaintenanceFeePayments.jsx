@@ -40,7 +40,7 @@ const columns = [
     { id: 'paymentDate', label: 'Fecha de Pago', minWidth: 100 }
 ]
 
-function AdminMaintenanceFeesManagement(){
+function AdminMaintenanceFeesPayments(){
     const {consortiumIdState, getAConsortiumByIdConsortium, consortiumName, getAllMaintenanceFeesPaymentByIdConsortium, period ,
         setPeriod, allMaintenanceFeesPayment , setAllMaintenanceFeesPayment, } = useContext(AdminManageContext)
     const [rowsPerPage, setRowsPerPage] = React.useState(10);
@@ -565,4 +565,4 @@ function AdminMaintenanceFeesManagement(){
         </div>
     )
 }
-export default AdminMaintenanceFeesManagement
+export default AdminMaintenanceFeesPayments
