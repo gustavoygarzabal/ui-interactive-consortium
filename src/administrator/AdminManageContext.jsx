@@ -1,7 +1,8 @@
-import {createContext, useState} from "react";
+import {createContext, useEffect, useState} from "react";
 import axios from "axios";
 import { format } from 'date-fns';
 import {jwtDecode} from "jwt-decode";
+import { useNavigate } from "react-router-dom";
 
 export const AdminManageContext = createContext()
 
@@ -17,6 +18,8 @@ export function AdminManageContextProvider(props){
     const [period , setPeriod] = useState(null)
     const [allMaintenanceFeesPayment , setAllMaintenanceFeesPayment] = useState([])
     const [allClaims , setAllClaims] = useState([])
+    const navigate = useNavigate();
+
     const statusMapping = {
         PENDING: "Pendiente",
         UNDER_REVIEW: "En Revisión",
@@ -83,6 +86,10 @@ export function AdminManageContextProvider(props){
     };
 
     const getAllDepartmentsByConsortium = async (idConsortium) => {
+        if (!consortiumIdState) {
+            return;
+        }
+
         const token = localStorage.getItem('token');
 
         if (!token) {
@@ -101,7 +108,7 @@ export function AdminManageContextProvider(props){
             }
 
             // Realizar la solicitud GET para obtener los departamentos
-            const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/departments?consortiumId=${idConsortium}`, {
+            const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/departments?consortiumId=${consortiumIdState}`, {
                 headers: {
                     Authorization: `Bearer ${token}` // Incluye el token en los encabezados
                 }
@@ -131,7 +138,18 @@ export function AdminManageContextProvider(props){
         }
     };
 
+
+    useEffect(() => {
+        if (consortiumIdState) {
+            getAConsortiumByIdConsortium();
+        }
+    }, [consortiumIdState]);
+
     const getAConsortiumByIdConsortium = async () => {
+        if (!consortiumIdState) {
+            return;
+        }
+
         // Obtén el token almacenado
         const token = localStorage.getItem('token');
 
@@ -175,8 +193,13 @@ export function AdminManageContextProvider(props){
         }
     };
 
-    const getAllAmenitiesByIdConsortium= async () => {
+    const getAllAmenitiesByIdConsortium = async () => {
         try {
+            if (!consortiumIdState) {
+                return;
+            }
+
+
             // Obtén el token almacenado
             const token = localStorage.getItem('token');
             if (!token) {
@@ -262,7 +285,10 @@ export function AdminManageContextProvider(props){
         }
     };
 
-    const getAllMaintenanceFeesByIdConsortium= async () => {
+    const getAllMaintenanceFeesByIdConsortium = async () => {
+        if (!consortiumIdState) {
+            return;
+        }
         const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/maintenanceFee?consortiumId=${consortiumIdState}`)
         const maintenanceFees = res.data.content;
         setAllMaintenanceFees(maintenanceFees.map(maintenanceFee =>{
@@ -276,8 +302,40 @@ export function AdminManageContextProvider(props){
         }))
     }
 
+    useEffect(() => {
+        const storedConsortiumId = localStorage.getItem('consortiumId');
+        if (storedConsortiumId) {
+            setConsortiumIdState(storedConsortiumId);
+        } else {
+            navigate('/admin/management/'); // Redirect if no consortiumId is found
+        }
+    }, []);
+
+    useEffect(() => {
+        const period = localStorage.getItem('period');
+        const storedConsortiumId = localStorage.getItem('consortiumId');
+        if (period && storedConsortiumId) {
+            setPeriod(period);
+            setConsortiumIdState(storedConsortiumId);
+            getAllMaintenanceFeesPaymentByIdConsortium()
+        } else {
+            navigate('/admin/management/'); // Redirect if no consortiumId is found
+        }
+    }, []);
+
+    useEffect(() => {
+        if (consortiumIdState) {
+            getAConsortiumByIdConsortium();
+        }
+    }, [consortiumIdState]);
+
     const getAllMaintenanceFeesPaymentByIdConsortium = async () => {
         try {
+
+            if (!consortiumIdState || !period) {
+                return;
+            }
+
             // Obtén el token
             const token = localStorage.getItem('token');
             if (!token) {

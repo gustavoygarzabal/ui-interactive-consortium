@@ -39,7 +39,7 @@ const columns = [
 
 function AdminDepartmentManagement(){
     const {consortiumIdState, setConsortiumIdState, allPersons, setAllPersons,allDepartments, setAllDepartments, getAllDepartmentsByConsortium,
-        getAllPersons, getAConsortiumByIdConsortium, consortiumName} = useContext(AdminManageContext)
+        getAllPersons, getAConsortiumByIdConsortium, consortiumName, } = useContext(AdminManageContext)
     // const [allDepartments, setAllDepartments] = useState([])
     // const [consortiumName, setConsortiumName] = useState(""); // Nuevo estado para el nombre del consorcio
     const [departmentCode, setDepartmentCode] = useState('')
@@ -133,7 +133,7 @@ function AdminDepartmentManagement(){
         if (departmentCode === '' && proprietor === '' && resident === '') {
             getAllDepartmentsByConsortium(consortiumIdState)
         }
-    }, [departmentCode, proprietor, resident])
+    }, [departmentCode, proprietor, resident, consortiumIdState])
 
     useEffect(() => {
         if (openEdit){

@@ -208,7 +208,7 @@ function AdminAmenitiesManagement(){
         if (amenityName === '' ){
             getAllAmenitiesByIdConsortium()
         }
-    }, [amenityName]);
+    }, [amenityName, consortiumIdState]);
 
     useEffect(() => {
         getAConsortiumByIdConsortium();

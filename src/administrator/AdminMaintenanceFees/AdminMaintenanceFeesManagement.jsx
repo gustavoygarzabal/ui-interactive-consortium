@@ -57,6 +57,7 @@ function AdminMaintenanceFeesManagement(){
 
     const handleManageClick = (period) => {
         setPeriod(period)
+        localStorage.setItem('period', period)
         // Redirige a la pantalla deseada con el período como parámetro
         navigate(`/admin/management/expensas/pago`);
     };
@@ -294,7 +295,7 @@ function AdminMaintenanceFeesManagement(){
 
                             {/* Add the TextField component */}
                             <TextField
-                                label="Ingrese Monto"
+                                label="Ingrese Monto Total"
                                 variant="outlined"
                                 value={totalAmount}
                                 onChange={handleInputChange}
@@ -309,7 +310,7 @@ function AdminMaintenanceFeesManagement(){
                                     marginBottom: '20px',
                                 }}
                                 onClick={uploadMaintenanceFee}
-                                disabled={loading || !file}
+                                disabled={loading || !file || !totalAmount}
                             >
                                 {loading ? <CircularProgress size={24} color="inherit" /> : 'Cargar Expensas'}
                             </Button>

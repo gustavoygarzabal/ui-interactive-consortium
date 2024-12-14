@@ -63,6 +63,7 @@ function AdminConsortiumList(){
 
     const handleAdminClick = (consortiumId) => {
         setConsortiumIdState(consortiumId)
+        localStorage.setItem('consortiumId', consortiumId)
         // Redirige a la nueva pantalla con el ID del consorcio
         navigate(`/admin/management/${consortiumId}/dashboard`)
     };

@@ -43,7 +43,7 @@ const columns = [
 
 function AdminMaintenanceFeesPayments(){
     const {consortiumIdState, getAConsortiumByIdConsortium, consortiumName, getAllMaintenanceFeesPaymentByIdConsortium, period ,
-        setPeriod, allMaintenanceFees, allMaintenanceFeesPayment , setAllMaintenanceFeesPayment} = useContext(AdminManageContext)
+        setPeriod, allMaintenanceFees, allMaintenanceFeesPayment , setAllMaintenanceFeesPayment, getAllMaintenanceFeesByIdConsortium} = useContext(AdminManageContext)
     const [rowsPerPage, setRowsPerPage] = React.useState(10);
     const [page, setPage] = React.useState(0);
     const [file, setFile] = useState(null);
@@ -76,15 +76,16 @@ function AdminMaintenanceFeesPayments(){
 
     useEffect(() => {
         let find = allMaintenanceFees.find(maintenanceFee => maintenanceFee.period === period);
-        console.log("TEST");
-        console.log(find);
         setSelectedMaintenanceFee(find);
-    }, []);
+    }, [allMaintenanceFees]);
 
     useEffect(() => {
         getAConsortiumByIdConsortium();
     }, [consortiumIdState]);
 
+    useEffect(() => {
+        getAllMaintenanceFeesByIdConsortium();
+    }, [consortiumIdState]);
 
     useEffect(() => {
         getAllMaintenanceFeesPaymentByIdConsortium();
@@ -509,21 +510,23 @@ function AdminMaintenanceFeesPayments(){
                                                     })}
                                                     <TableCell align="center"  sx={tableCellStyles}>
                                                         <IconButton
+                                                            disabled={maintenanceFeePayment.status !== "Pagado"}
                                                             aria-label="download-file"
                                                             onClick={() => handleDownload(maintenanceFeePayment.maintenanceFeePaymentId)}
                                                             sx={{ padding: '4px' }}
                                                         >
-                                                            <CloudDownloadIcon fontSize="small" sx={{ color: '#002776' }} />
+                                                            <CloudDownloadIcon fontSize="small" sx={{color: maintenanceFeePayment.status === "Pagado" ? '#002776' : '#48494a' }} />
                                                         </IconButton>
                                                     </TableCell>
                                                     <TableCell align="center" style={{ padding: '8px', minWidth: 100 }}>
 
                                                         <IconButton
+                                                            disabled={maintenanceFeePayment.status === "Pagado"}
                                                             aria-label="edit"
                                                             onClick={() => handleEditClick(maintenanceFeePayment)}
                                                             sx={{ padding: '4px', marginRight: '4px' }}
                                                         >
-                                                            <EditIcon fontSize="small" sx={{ color: '#002776' }} />
+                                                            <EditIcon fontSize="small" sx={{ color: maintenanceFeePayment.status !== "Pagado" ? '#002776' : '#48494a' }} />
                                                         </IconButton>
                                                     </TableCell>
                                                 </TableRow>
