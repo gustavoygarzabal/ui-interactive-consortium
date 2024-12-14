@@ -156,6 +156,7 @@ function AdminMaintenanceFeesPayments(){
 
             // Actualiza la lista de expensas
             await getAllMaintenanceFeesPaymentByIdConsortium();
+            await getAllMaintenanceFeesByIdConsortium();
 
             // Mostrar mensaje de éxito
             setSnackbarMessage('Actualización exitosa');
