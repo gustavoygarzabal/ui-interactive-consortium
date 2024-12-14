@@ -16,9 +16,11 @@ export function AdminManageContextProvider(props){
     const [allMaintenanceFees , setAllMaintenanceFees] = useState([])
     const [period , setPeriod] = useState(null)
     const [allMaintenanceFeesPayment , setAllMaintenanceFeesPayment] = useState([])
+    const [allClaims , setAllClaims] = useState([])
     const statusMapping = {
         PENDING: "Pendiente",
-        PAID: "Pagado"
+        UNDER_REVIEW: "En Revisión",
+        FINISHED : "Resuelto"
     };
 
 
@@ -321,6 +323,56 @@ export function AdminManageContextProvider(props){
         }
     };
 
+    const getAllClaimByConsortium = async () => {
+        try {
+            // Obtén el token
+            const token = localStorage.getItem('token');
+            if (!token) {
+                alert("No tienes acceso. Por favor, inicia sesión.");
+                return;
+            }
+
+            // Decodifica el token
+            const decodedToken = jwtDecode(token);
+            const roles = decodedToken.role || [];
+
+            // Verifica el rol
+            if (!roles.includes('ROLE_ADMIN')) {
+                alert("No tienes permisos para acceder a esta información.");
+                return;
+            }
+
+            // Realiza la solicitud
+            const res = await axios.get(
+                `${import.meta.env.VITE_API_BASE_URL}/issueReport/consortium/${consortiumIdState}/admin`, // consortiumId en la URL
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            const claims = res.data.content;
+            console.log(claims)
+            setAllClaims(
+                claims.map((claim) => ({
+                    issueReportId: claim.issueReportId,
+                    subject: claim.subject,
+                    issue: claim.issue,
+                    user: claim.person.name && claim.person.lastName
+                    ? `${claim.person.name} ${claim.person.lastName}`
+                        : '',
+                    status: statusMapping[claim.status] || claim.status,
+                    createdDate: formatDate(claim.createdDate),
+                    response: claim.response,
+                    responseDate: formatDate(claim.responseDate),
+                }))
+            );
+        } catch (error) {
+            console.error("Error al obtener las expensas: ", error);
+            alert("Hubo un error al obtener los datos.");
+        }
+    };
  return(
      <AdminManageContext.Provider value={{
          consortiumIdState,
@@ -342,13 +394,16 @@ export function AdminManageContextProvider(props){
          period ,
          setPeriod,
          allMaintenanceFeesPayment , setAllMaintenanceFeesPayment,
+         allClaims , setAllClaims,
+         statusMapping,
          getAllPersons,
          getAllDepartmentsByConsortium,
          getAConsortiumByIdConsortium,
          getAllAmenitiesByIdConsortium,
          getAllPostsByIdConsortium,
          getAllMaintenanceFeesByIdConsortium,
-         getAllMaintenanceFeesPaymentByIdConsortium
+         getAllMaintenanceFeesPaymentByIdConsortium,
+         getAllClaimByConsortium
 
      }}>
          {props.children}

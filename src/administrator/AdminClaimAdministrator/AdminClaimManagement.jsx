@@ -1,4 +1,4 @@
-import React, {useContext, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {
     Box,
     Table,
@@ -10,91 +10,81 @@ import {
     Typography,
     Select,
     MenuItem,
-    Paper, Chip, Dialog, DialogTitle, DialogContent, DialogActions, Grid, Card, CardContent,
+    Paper, Chip, Dialog, DialogTitle, DialogContent, DialogActions, Grid, Card, CardContent, TablePagination,
 } from '@mui/material';
-import PendingIcon from '@mui/icons-material/HourglassEmpty';
-import ReviewIcon from '@mui/icons-material/RateReview';
-import ResolvedIcon from '@mui/icons-material/CheckCircle';
+
 import EditIcon from "@mui/icons-material/Edit";
 import IconButton from "@mui/material/IconButton";
 import AdminGallerySidebar from "../AdminGallerySidebar.jsx";
 import {AdminManageContext} from "../AdminManageContext.jsx";
-import Button from "@mui/material/Button";
+
 import {AccessTime, Assessment, Assignment, Person} from "@mui/icons-material";
+import {useSnackbar} from "notistack";
 
+
+const columns = [
+    { id: 'subject', label: 'Título', minWidth: 100 },
+    { id: 'issue', label: 'Descripción', minWidth: 100 },
+    { id: 'user', label: 'Nombre', minWidth: 100 },
+    { id: 'status', label: 'Estado del Reclamo', minWidth: 100 },
+    { id: 'createdDate', label: 'Fecha del Reclamo', minWidth: 100 }
+]
 const AdminClaimManagement = () => {
-    const {consortiumName} = useContext(AdminManageContext)
-    const [reclamos, setReclamos] = useState([
-        {
-            id: 1,
-            titulo: 'Problema en la luz',
-            descripcion: 'La luz del pasillo no funciona.',
-            estado: 'Pendiente',
-            nombre: 'Juan Pérez',
-            fecha: '2024-12-11',
-        },
-        {
-            id: 2,
-            titulo: 'Fuga de agua',
-            descripcion: 'Hay una fuga en el baño común.',
-            estado: 'En Revisión',
-            nombre: 'María López',
-            fecha: '2024-12-10',
-        },
-        {
-            id: 3,
-            titulo: 'Puerta rota',
-            descripcion: 'La puerta de entrada está rota.',
-            estado: 'Resuelto',
-            nombre: 'Carlos García',
-            fecha: '2024-12-09',
-        },
-    ]);
-    const [selectedClaim, setSelectedClaim] = useState(null);
-    const [newEstado, setNewEstado] = useState('');
-    const handleEdit = (id) => {
-        const reclamo = reclamos.find((r) => r.id === id);
-        setSelectedClaim(reclamo);
-        setNewEstado(reclamo.estado);
+    const {consortiumName, getAllClaimByConsortium, allClaims , setAllClaims, getAConsortiumByIdConsortium,consortiumIdState,statusMapping  } = useContext(AdminManageContext)
+    const [rowsPerPage, setRowsPerPage] = React.useState(10);
+    const [page, setPage] = React.useState(0);
+    const { enqueueSnackbar } = useSnackbar();
+
+    const handleChangePage = (event, newPage) => {
+        setPage(newPage);
     };
 
-    const handleSave = () => {
-        setReclamos((prevReclamos) =>
-            prevReclamos.map((r) =>
-                r.id === selectedClaim.id ? { ...r, estado: newEstado } : r
-            )
-        );
-        setSelectedClaim(null);
+    const handleChangeRowsPerPage = (event) => {
+        setRowsPerPage(+event.target.value);
+        setPage(0);
     };
 
-    const getEstadoColor = (estado) => {
-        switch (estado) {
-            case 'Pendiente':
-                return '#BCE7FD';
-            case 'En Revisión':
-                return '#FFD9C0';
-            case 'Resuelto':
-                return '#B0F2C2';
-            default:
-                return '#FFFFFF';
-        }
+
+    useEffect(() => {
+        getAConsortiumByIdConsortium();
+    }, [consortiumIdState]);
+
+
+    useEffect(() => {
+        getAllClaimByConsortium();
+    }, [consortiumIdState]);
+
+    const tableHeadCellStyles = {
+        backgroundColor: '#002776',
+        color: '#FFFFFF',
+        fontWeight: 'bold',
+        textTransform: 'uppercase',
     };
 
+    const tableCellStyles = {
+        color: '#002776',
+        padding: '8px',
+    };
+    const statusColors = {
+        'Pendiente': '#BCE7FD',
+        'En Revisión': '#d79569',
+        'Resuelto': '#B0F2C2',
+    };
     return (
         <Box
             sx={{
                 display: 'flex',
-                minHeight: '100vh', // Asegura que el contenedor ocupe toda la altura de la pantalla
+                minHeight: '100vh', // Ensures that the container takes the full height of the screen
             }}
         >
-            <AdminGallerySidebar/>
+            <AdminGallerySidebar />
             <Box
                 component="main"
                 sx={{
-                    flexGrow: 1, // Permite que este componente ocupe el espacio restante
-                    padding: { xs: '16px', sm: '24px' }, // Espaciado variable según el tamaño de la pantalla
-                    marginLeft: { xs: 0, sm: '240px' }, // Evita que el contenido se superponga al SuperAdminSidebar
-                    transition: 'margin-left 0.3s ease', // Suaviza la transición al cambiar de tamaño
+                    flexGrow: 1, // Allows this component to take up the remaining space
+                    padding: { xs: '16px', sm: '24px' },
+                    marginLeft: { xs: 0, sm: '240px' },
+                    transition: 'margin-left 0.3s ease',
                 }}
             >
                 <Box
@@ -104,7 +94,7 @@ const AdminClaimManagement = () => {
                         alignItems: 'center',
                     }}
                 >
-                    {/* Título */}
+                    {/* Title */}
                     <Typography
                         variant="h6"
                         component="h1"
@@ -115,181 +105,189 @@ const AdminClaimManagement = () => {
                             marginBottom: '20px',
                         }}
                     >
-                        Reclamos del Consorcio {consortiumName} {/* Aquí mostramos el nombre del consorcio */}
+                        Reclamos del Consorcio {consortiumName}
                     </Typography>
 
-                    <Box sx={{ width: '100%', maxWidth: '900px',  marginLeft: { xs: '40px', sm: '80px' } }}>
-            {/* Tabla de resumen */}
-                        <Box sx={{ flexGrow: 1, p: 3 }}>
-                            <Grid container spacing={3}>
-                                {/* Active Users Card */}
-                                <Grid item xs={12} sm={6} md={2.4}>
-                                    <Card>
-                                        <CardContent sx={{ textAlign: 'center', py: 2 }}>
-                                            <Typography variant="h4" component="div" sx={{ mb: 1 }}>
-                                                319
-                                            </Typography>
-                                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
-                                                <Person color="primary" />
-                                                <Typography color="text.secondary" variant="body2">
-                                                    Activos
-                                                </Typography>
-                                            </Box>
-                                        </CardContent>
-                                    </Card>
-                                </Grid>
+                    {/* Grid for Cards */}
+                    <Grid container spacing={3} justifyContent="center" sx={{ marginBottom: '40px' }}>
+                        {/* Pending Card */}
+                        <Grid item xs={12} sm={6} md={2.4}>
+                            <Card>
+                                <CardContent sx={{ textAlign: 'center', py: 2 }}>
+                                    <Typography variant="h4" component="div" sx={{ mb: 1 }}>
+                                        5
+                                    </Typography>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
+                                        <AccessTime color="primary" />
+                                        <Typography color="text.secondary" variant="body2">
+                                            Pendientes
+                                        </Typography>
+                                    </Box>
+                                </CardContent>
+                            </Card>
+                        </Grid>
 
-                                {/* Minutes Card */}
-                                <Grid item xs={12} sm={6} md={2.4}>
-                                    <Card>
-                                        <CardContent sx={{ textAlign: 'center', py: 2 }}>
-                                            <Typography variant="h4" component="div" sx={{ mb: 1 }}>
-                                                5
-                                            </Typography>
-                                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
-                                                <AccessTime color="primary" />
-                                                <Typography color="text.secondary" variant="body2">
-                                                    Pendientes
-                                                </Typography>
-                                            </Box>
-                                        </CardContent>
-                                    </Card>
-                                </Grid>
+                        {/* In Review Card */}
+                        <Grid item xs={12} sm={6} md={2.4}>
+                            <Card>
+                                <CardContent sx={{ textAlign: 'center', py: 2 }}>
+                                    <Typography variant="h4" component="div" sx={{ mb: 1 }}>
+                                        0
+                                    </Typography>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
+                                        <Assignment color="primary" />
+                                        <Typography color="text.secondary" variant="body2">
+                                            En revisión
+                                        </Typography>
+                                    </Box>
+                                </CardContent>
+                            </Card>
+                        </Grid>
 
-                                {/* Pending Card */}
-                                <Grid item xs={12} sm={6} md={2.4}>
-                                    <Card>
-                                        <CardContent sx={{ textAlign: 'center', py: 2 }}>
-                                            <Typography variant="h4" component="div" sx={{ mb: 1 }}>
-                                                0
-                                            </Typography>
-                                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
-                                                <Assignment color="primary" />
-                                                <Typography color="text.secondary" variant="body2">
-                                                    En revisión
-                                                </Typography>
-                                            </Box>
-                                        </CardContent>
-                                    </Card>
-                                </Grid>
+                        {/* Resolved Card */}
+                        <Grid item xs={12} sm={6} md={2.4}>
+                            <Card>
+                                <CardContent sx={{ textAlign: 'center', py: 2 }}>
+                                    <Typography variant="h4" component="div" sx={{ mb: 1 }}>
+                                        2
+                                    </Typography>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
+                                        <Assessment color="primary" />
+                                        <Typography color="text.secondary" variant="body2">
+                                            Resueltos
+                                        </Typography>
+                                    </Box>
+                                </CardContent>
+                            </Card>
+                        </Grid>
 
-                                {/* Reports Card */}
-                                <Grid item xs={12} sm={6} md={2.4}>
-                                    <Card>
-                                        <CardContent sx={{ textAlign: 'center', py: 2 }}>
-                                            <Typography variant="h4" component="div" sx={{ mb: 1 }}>
-                                                2
-                                            </Typography>
-                                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
-                                                <Assessment color="primary" />
-                                                <Typography color="text.secondary" variant="body2">
-                                                    Resueltos
-                                                </Typography>
-                                            </Box>
-                                        </CardContent>
-                                    </Card>
-                                </Grid>
+                        {/* Total Card */}
+                        <Grid item xs={12} sm={6} md={2.4}>
+                            <Card>
+                                <CardContent sx={{ textAlign: 'center', py: 2 }}>
+                                    <Typography variant="h4" component="div" sx={{ mb: 1 }}>
+                                        326
+                                    </Typography>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
+                                        <Typography color="text.secondary" variant="body2">
+                                            Total
+                                        </Typography>
+                                    </Box>
+                                </CardContent>
+                            </Card>
+                        </Grid>
+                    </Grid>
 
-                                {/* Total Card */}
-                                <Grid item xs={12} sm={6} md={2.4}>
-                                    <Card>
-                                        <CardContent sx={{ textAlign: 'center', py: 2 }}>
-                                            <Typography variant="h4" component="div" sx={{ mb: 1 }}>
-                                                326
-                                            </Typography>
-                                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
-                                                <Typography color="text.secondary" variant="body2">
-                                                    Total
-                                                </Typography>
-                                            </Box>
-                                        </CardContent>
-                                    </Card>
-                                </Grid>
-                            </Grid>
-                        </Box>
-
-            {/* Tabla de detalles */}
-            <TableContainer
-                sx={{
-                    maxWidth: '900px',
-                    borderRadius: '10px',
-                    border: '1px solid #002776',
-                }}
-            >
-                <Table>
-                    <TableHead>
-                        <TableRow>
-                            <TableCell sx={{ backgroundColor: '#C8DFE2', color: '#002776' }}>Título</TableCell>
-                            <TableCell sx={{ backgroundColor: '#C8DFE2', color: '#002776' }}>Descripción</TableCell>
-                            <TableCell sx={{ backgroundColor: '#C8DFE2', color: '#002776' }}>Estado</TableCell>
-                            <TableCell sx={{ backgroundColor: '#C8DFE2', color: '#002776' }}>Nombre</TableCell>
-                            <TableCell sx={{ backgroundColor: '#C8DFE2', color: '#002776' }}>Fecha</TableCell>
-                            <TableCell sx={{ backgroundColor: '#C8DFE2', color: '#002776' }}>Acciones</TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {reclamos.map((reclamo) => (
-                            <TableRow
-                                key={reclamo.id}
+                    {/* Table */}
+                    <Box sx={{ width: '100%', maxWidth: '900px', marginBottom: '40px' }}>
+                        <TableContainer
+                            sx={{
+                                maxHeight: 600,
+                                overflowX: 'auto',
+                                borderRadius: '10px',
+                                border: '1px solid #002776',
+                            }}
+                        >
+                            <Table
+                                stickyHeader
                                 sx={{
-                                    backgroundColor: '#FFFFFF',
-                                    '&:hover': { backgroundColor: '#E3F2FD' },
+                                    borderCollapse: 'separate',
+                                    borderSpacing: '0',
                                 }}
                             >
-                                <TableCell>{reclamo.titulo}</TableCell>
-                                <TableCell>{reclamo.descripcion}</TableCell>
-                                <TableCell>
-                                    <Chip
-                                        label={reclamo.estado}
-                                        sx={{
-                                            backgroundColor: getEstadoColor(reclamo.estado),
-                                            color: '#002776',
-                                            borderRadius: '16px',
-                                        }}
-                                    />
-                                </TableCell>
-                                <TableCell>{reclamo.nombre}</TableCell>
-                                <TableCell>{reclamo.fecha}</TableCell>
-                                <TableCell>
-                                    <IconButton onClick={() => handleEdit(reclamo.id)}>
-                                        <EditIcon sx={{ color: '#002776' }} />
-                                    </IconButton>
-                                </TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-            </TableContainer>
-                        {/* Diálogo para editar estado */}
-                        {selectedClaim && (
-                            <Dialog open={Boolean(selectedClaim)} onClose={() => setSelectedClaim(null)}>
-                                <DialogTitle>Editar Estado</DialogTitle>
-                                <DialogContent>
-                                    <Select
-                                        value={newEstado}
-                                        onChange={(e) => setNewEstado(e.target.value)}
-                                        fullWidth
-                                        sx={{ marginTop: 2 }}
-                                    >
-                                        <MenuItem value="Pendiente">Pendiente</MenuItem>
-                                        <MenuItem value="En Revisión">En Revisión</MenuItem>
-                                        <MenuItem value="Resuelto">Resuelto</MenuItem>
-                                    </Select>
-                                </DialogContent>
-                                <DialogActions>
-                                    <Button onClick={() => setSelectedClaim(null)} color="secondary">
-                                        Cancelar
-                                    </Button>
-                                    <Button onClick={handleSave} color="primary">
-                                        Guardar
-                                    </Button>
-                                </DialogActions>
-                            </Dialog>
-                        )}
+                                <TableHead>
+                                    <TableRow sx={{ height: '24px' }}>
+                                        {columns.map((column, index) => (
+                                            <TableCell
+                                                key={column.id}
+                                                align={column.align}
+                                                sx={{
+                                                    ...tableHeadCellStyles,
+                                                    ...(index === 0 && {
+                                                        borderTopLeftRadius: '10px',
+                                                    }),
+                                                }}
+                                            >
+                                                {column.label}
+                                            </TableCell>
+                                        ))}
+                                        <TableCell
+                                            align="center"
+                                            sx={{
+                                                ...tableHeadCellStyles,
+                                                borderTopRightRadius: '10px',
+                                            }}
+                                        >
+                                            Editar
+                                        </TableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {allClaims
+                                        .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                                        .map((claim) => {
+                                            return (
+                                                <TableRow
+                                                    hover
+                                                    key={claim.issueReportId}
+                                                    sx={{
+                                                        backgroundColor: '#FFFFFF',
+                                                        '&:hover': { backgroundColor: '#F6EFE5' },
+                                                    }}
+                                                >
+                                                    {columns.map((column) => {
+                                                        const value = claim[column.id];
+                                                        return (
+                                                            <TableCell
+                                                                key={column.id}
+                                                                align="center"
+                                                                sx={{ ...tableCellStyles, textAlign: 'center' }}
+                                                            >
+                                                                {column.id === 'status' ? (
+                                                                    // Show Chip based on the status color
+                                                                    <Chip
+                                                                        label={statusMapping[claim.status] || claim.status}
+                                                                        sx={{
+                                                                            backgroundColor: statusColors[claim.status] || '#FFFFFF',
+                                                                            color: '#000000',
+                                                                        }}
+                                                                    />
+                                                                ) : (
+                                                                    value
+                                                                )}
+                                                            </TableCell>
+                                                        );
+                                                    })}
+                                                    <TableCell align="center" sx={tableCellStyles}>
+                                                        <IconButton
+                                                            aria-label="edit"
+                                                            onClick={() => handleClickOpenEdit(claim.status)}
+                                                            sx={{ color: '#002776' }}
+                                                        >
+                                                            <EditIcon fontSize="small" />
+                                                        </IconButton>
+                                                    </TableCell>
+                                                </TableRow>
+                                            );
+                                        })}
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
+                        <TablePagination
+                            rowsPerPageOptions={[10, 20, 50]}
+                            component="div"
+                            count={allClaims.length}
+                            rowsPerPage={rowsPerPage}
+                            page={page}
+                            onPageChange={handleChangePage}
+                            onRowsPerPageChange={handleChangeRowsPerPage}
+                            labelRowsPerPage="Filas por página"
+                        />
+                    </Box>
+                </Box>
+            </Box>
         </Box>
-    </Box>
-    </Box>
-    </Box>
     );
 };
+
 export default AdminClaimManagement;
