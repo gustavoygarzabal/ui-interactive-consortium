@@ -63,7 +63,7 @@ const AdminBulletinBoard = () => {
             }
         };
         fetchPosts();
-    }, []);
+    }, [consortiumIdState]);
 
 
 

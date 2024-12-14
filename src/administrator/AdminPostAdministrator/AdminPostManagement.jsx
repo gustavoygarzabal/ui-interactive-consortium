@@ -167,6 +167,10 @@ function AdminPostManagement(){
     };
 
     useEffect(() => {
+        getAllPostsByIdConsortium()
+    }, [consortiumIdState]);
+
+    useEffect(() => {consortiumIdState
         if (postTitle === '' ){
             getAllPostsByIdConsortium()
         }

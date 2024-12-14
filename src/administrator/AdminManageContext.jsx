@@ -22,6 +22,9 @@ export function AdminManageContextProvider(props){
 
     const statusMapping = {
         PENDING: "Pendiente",
+        PAID: "Pagado",
+        EXPIRED: "Expirado",
+        CANCELED: "Cancelado",
         UNDER_REVIEW: "En Revisión",
         FINISHED : "Resuelto"
     };
@@ -244,7 +247,11 @@ export function AdminManageContextProvider(props){
         }
     };
 
-    const getAllPostsByIdConsortium= async () => {   // Obtén el token del almacenamiento local
+    const getAllPostsByIdConsortium = async () => {   // Obtén el token del almacenamiento local
+        if (!consortiumIdState) {
+            return;
+        }
+
         const token = localStorage.getItem('token');
         if (!token) {
             alert("No estás autorizado. Por favor, inicia sesión.");
@@ -314,7 +321,7 @@ export function AdminManageContextProvider(props){
     useEffect(() => {
         const period = localStorage.getItem('period');
         const storedConsortiumId = localStorage.getItem('consortiumId');
-        if (period && storedConsortiumId) {
+        if (storedConsortiumId) {
             setPeriod(period);
             setConsortiumIdState(storedConsortiumId);
             getAllMaintenanceFeesPaymentByIdConsortium()
