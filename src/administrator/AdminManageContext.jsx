@@ -38,6 +38,10 @@ export function AdminManageContextProvider(props){
     }
 
     const getAllPersons = async () => {
+        if (!consortiumIdState) {
+            return;
+        }
+
         // Obtén el token del almacenamiento local
         const token = localStorage.getItem('token');
 
