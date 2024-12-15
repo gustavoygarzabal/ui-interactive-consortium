@@ -53,14 +53,6 @@ function AdminAmenitiesManagement(){
     const [amenitytInfo, setAmenitytInfo] = useState({})
     const [uploadedImages, setUploadedImages] = useState({}); // Estado para manejar las imágenes subidas
 
-    const handleChangePage = (event, newPage) => {
-        setPage(newPage);
-    };
-
-    const handleChangeRowsPerPage = (event) => {
-        setRowsPerPage(+event.target.value);
-        setPage(0);
-    };
 
     const handleClickOpenEdit = (idAmenityToEdit, amenityNameEdit, amenityMaxBookingEdit) => {
         setIdAmenityUpdate(idAmenityToEdit)
@@ -214,62 +206,7 @@ function AdminAmenitiesManagement(){
         getAConsortiumByIdConsortium();
     }, [consortiumIdState]);
 
-    const getAllAmenitiesByFilter = async () => {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            alert("No estás autorizado. Por favor, inicia sesión.");
-            return; // Detenemos la ejecución si no hay token
-        }
 
-        // Decodifica el token para verificar el rol
-        const decodedToken = jwtDecode(token);
-        const isAdmin = decodedToken?.role?.includes('ROLE_ADMIN');
-        if (!isAdmin) {
-            alert("No tienes permisos para realizar esta acción.");
-            return; // Detenemos la ejecución si no tiene el rol ROLE_ADMIN
-        }
-
-        // Si el usuario tiene permisos, continúa con la ejecución
-        const handleEmptyValues = (value) => {
-            return value === '' ? null : value;
-        };
-
-        const name = handleEmptyValues(amenityName);
-        let params = { idConsortium: consortiumIdState };
-
-        if (name !== null) params.name = name;
-
-        if (Object.keys(params).length === 1 && params.idConsortium) {
-            getAllAmenitiesByIdConsortium();
-        } else {
-            const queryParams = new URLSearchParams(params).toString();
-            try {
-                const res = await axios.get(
-                    `${import.meta.env.VITE_API_BASE_URL}/Amenities/filterBy?${queryParams}`,
-                    {
-                        headers: {
-                            Authorization: `Bearer ${token}`, // Incluimos el token en los encabezados
-                        },
-                    }
-                );
-
-                const amenities = res.data.content;
-                setAllAmenities(
-                    amenities.map((amenity) => {
-                        return {
-                            amenityId: amenity.amenityId,
-                            name: amenity.name,
-                            maxBookings: amenity.maxBookings,
-
-                        };
-                    })
-                );
-            } catch (error) {
-                console.error("Error al filtrar amenities:", error);
-                alert("Ocurrió un error al obtener los datos.");
-            }
-        }
-    };
 
     const deleteAmenity = async (idAmenityToDelete) =>{
         const token = localStorage.getItem('token');
