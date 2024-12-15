@@ -1,4 +1,4 @@
-import React, {useContext} from 'react';
+import React, {useContext, useEffect} from 'react';
 import { Grid, Card, CardActionArea, CardContent, Typography } from '@mui/material';
 import PeopleIcon from '@mui/icons-material/People';
 import HomeIcon from '@mui/icons-material/Home';
@@ -12,6 +12,9 @@ import Paper from "@mui/material/Paper";
 import Box from "@mui/material/Box";
 import BusinessIcon from '@mui/icons-material/Business';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
+import {AdminManageContext} from "../administrator/AdminManageContext.jsx";
+import AdminGallerySidebar from "../administrator/AdminGallerySidebar.jsx";
+import {ResidentManageContext} from "./ResidentManageContext.jsx";
 
 const options = [
     { title: 'Mis Consorcios', icon: <BusinessIcon style={{ fontSize: 80, color: '#002776' }} />, path: '/resident/management' },
@@ -22,115 +25,120 @@ const options = [
 ];
 
 const ResidentDashboard = () => {
+    const {consortiumName, consortiumIdState, getAConsortiumByIdConsortium} = useContext(ResidentManageContext)
     const navigate = useNavigate();
 
+    useEffect(() => {
+        getAConsortiumByIdConsortium();
+    }, [consortiumIdState]);
+
     return (
-        <div>
+        <Box
+            sx={{
+                display: 'flex',
+                minHeight: '100vh',
+            }}
+        >
+            <AdminGallerySidebar />
             <Box
+                component="main"
                 sx={{
-                    padding: '20px',
-                    display: 'flex',
-                    justifyContent: 'center',
-                    textAlign: 'center',
-                    paddingX: { xs: '10px', sm: '20px', md: '40px' },
+                    flexGrow: 1,
+                    padding: { xs: '16px', sm: '24px' },
+                    marginLeft: { xs: 0, sm: '240px' },
+                    transition: 'margin-left 0.3s ease',
                 }}
             >
-                <Typography
-                    variant="h6"
-                    component="h1"
+                <Box
                     sx={{
-                        fontWeight: 'bold',
-                        color: '#003366',
-                        fontSize: { xs: '1.2rem', sm: '1.5rem', md: '1.8rem' },
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'flex-start',
+                        minHeight: '100vh',
+                        paddingTop: '40px',
                     }}
                 >
-                    Panel del Residente del Consorcio ...
-                </Typography>
-            </Box>
-            <Container
-                maxWidth="lg"
-                style={{
-                    marginTop: '40px',
-                    marginBottom: '60px',
-                    display: 'flex',
-                    justifyContent: 'center',
-                }}
-            >
-                <Paper
-                    elevation={2}
-                    style={{
-                        padding: '40px',
-                        borderRadius: '12px',
-                        width: '100%',
-                        maxWidth: '900px',
-                    }}
-                >
-                    <Grid container spacing={4} justifyContent="center" alignItems="center">
-                        {/* Primera fila con 4 opciones */}
-                        {options.slice(0, 4).map((option) => (
+                    <Typography
+                        variant="h6"
+                        component="h1"
+                        sx={{
+                            fontWeight: 'bold',
+                            color: '#003366',
+                            fontSize: { xs: '1.5rem', md: '2rem' },
+                            marginBottom: '20px', // Se aumentó el margen para separar más el título de las tarjetas
+                        }}
+                    >
+                        Panel de Gestión de {consortiumName}
+                    </Typography>
+
+                    <Grid container spacing={3} justifyContent="center" maxWidth="1000px"> {/* Se aumentó el spacing entre las tarjetas */}
+                        {options.map((option, index) => (
                             <Grid
                                 item
                                 xs={12}
                                 sm={6}
-                                md={3} // Cambiado a 3 para que entren 4 elementos por fila
+                                md={3}
                                 key={option.title}
-                                style={{
+                                sx={{
                                     display: 'flex',
                                     justifyContent: 'center',
+                                    marginBottom: index >= 4 ? '30px' : '0px',
                                 }}
                             >
                                 <Card
-                                    style={{
+                                    sx={{
                                         width: '200px',
                                         height: '200px',
                                         display: 'flex',
                                         justifyContent: 'center',
                                         alignItems: 'center',
+                                        backgroundColor: 'transparent',
+                                        boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
+                                        transition: 'transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out',
+                                        '&:hover': {
+                                            transform: 'scale(1.05)',
+                                            boxShadow: '0px 16px 32px rgba(184, 218, 227, 0.8)',
+                                        },
                                     }}
                                 >
                                     <CardActionArea
                                         onClick={() => navigate(option.path)}
-                                        style={{ height: '100%', width: '100%' }}
+                                        sx={{
+                                            width: '100%',
+                                            height: '100%',
+                                            '&:hover .MuiCardContent-root': {
+                                                backgroundColor: 'transparent',
+                                            },
+                                        }}
                                     >
-                                        <CardContent style={{ textAlign: 'center' }}>
-                                            {option.icon}
-                                            <Typography variant="h6" style={{ marginTop: '10px' }}>
-                                                {option.title}
-                                            </Typography>
-                                        </CardContent>
-                                    </CardActionArea>
-                                </Card>
-                            </Grid>
-                        ))}
-                        {/* Segunda fila con 4 opciones */}
-                        {options.slice(4).map((option) => (
-                            <Grid
-                                item
-                                xs={12}
-                                sm={6}
-                                md={3} // Igual que arriba para mantener consistencia
-                                key={option.title}
-                                style={{
-                                    display: 'flex',
-                                    justifyContent: 'center',
-                                }}
-                            >
-                                <Card
-                                    style={{
-                                        width: '200px',
-                                        height: '200px',
-                                        display: 'flex',
-                                        justifyContent: 'center',
-                                        alignItems: 'center',
-                                    }}
-                                >
-                                    <CardActionArea
-                                        onClick={() => navigate(option.path)}
-                                        style={{ height: '100%', width: '100%' }}
-                                    >
-                                        <CardContent style={{ textAlign: 'center' }}>
-                                            {option.icon}
-                                            <Typography variant="h6" style={{ marginTop: '10px' }}>
+                                        <CardContent
+                                            sx={{
+                                                textAlign: 'center',
+                                                transition: 'background-color 0.3s ease',
+                                                backgroundColor: 'transparent',
+                                            }}
+                                        >
+                                            <Box
+                                                sx={{
+                                                    display: 'flex',
+                                                    justifyContent: 'center',
+                                                    alignItems: 'center',
+                                                    marginBottom: '15px', // Aumenté el margen para bajar los iconos
+                                                    transition: 'color 0.3s ease',
+                                                    color: '#002776',
+                                                    fontSize: { xs: '2rem', md: '2.5rem' }, // Aumenté el tamaño de los iconos
+                                                }}
+                                            >
+                                                {option.icon}
+                                            </Box>
+                                            <Typography
+                                                variant="h6"
+                                                sx={{
+                                                    color: '#644536',
+                                                    fontWeight: 'bold',
+                                                }}
+                                            >
                                                 {option.title}
                                             </Typography>
                                         </CardContent>
@@ -139,9 +147,9 @@ const ResidentDashboard = () => {
                             </Grid>
                         ))}
                     </Grid>
-                </Paper>
-            </Container>
-        </div>
+                </Box>
+            </Box>
+        </Box>
     );
 };
 

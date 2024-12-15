@@ -1,7 +1,8 @@
-import {createContext, useState} from "react";
+import {createContext, useEffect, useState} from "react";
 import axios from "axios";
 import { format } from 'date-fns';
 import {jwtDecode} from "jwt-decode";
+import { useNavigate } from "react-router-dom";
 
 export const AdminManageContext = createContext()
 
@@ -16,9 +17,16 @@ export function AdminManageContextProvider(props){
     const [allMaintenanceFees , setAllMaintenanceFees] = useState([])
     const [period , setPeriod] = useState(null)
     const [allMaintenanceFeesPayment , setAllMaintenanceFeesPayment] = useState([])
+    const [allClaims , setAllClaims] = useState([])
+    const navigate = useNavigate();
+
     const statusMapping = {
         PENDING: "Pendiente",
-        PAID: "Pagado"
+        PAID: "Pagado",
+        EXPIRED: "Expirado",
+        CANCELED: "Cancelado",
+        UNDER_REVIEW: "En Revisión",
+        FINISHED : "Resuelto"
     };
 
 
@@ -30,6 +38,10 @@ export function AdminManageContextProvider(props){
     }
 
     const getAllPersons = async () => {
+        if (!consortiumIdState) {
+            return;
+        }
+
         // Obtén el token del almacenamiento local
         const token = localStorage.getItem('token');
 
@@ -81,6 +93,10 @@ export function AdminManageContextProvider(props){
     };
 
     const getAllDepartmentsByConsortium = async (idConsortium) => {
+        if (!consortiumIdState) {
+            return;
+        }
+
         const token = localStorage.getItem('token');
 
         if (!token) {
@@ -99,7 +115,7 @@ export function AdminManageContextProvider(props){
             }
 
             // Realizar la solicitud GET para obtener los departamentos
-            const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/departments?consortiumId=${idConsortium}`, {
+            const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/departments?consortiumId=${consortiumIdState}`, {
                 headers: {
                     Authorization: `Bearer ${token}` // Incluye el token en los encabezados
                 }
@@ -129,7 +145,18 @@ export function AdminManageContextProvider(props){
         }
     };
 
+
+    useEffect(() => {
+        if (consortiumIdState) {
+            getAConsortiumByIdConsortium();
+        }
+    }, [consortiumIdState]);
+
     const getAConsortiumByIdConsortium = async () => {
+        if (!consortiumIdState) {
+            return;
+        }
+
         // Obtén el token almacenado
         const token = localStorage.getItem('token');
 
@@ -173,8 +200,13 @@ export function AdminManageContextProvider(props){
         }
     };
 
-    const getAllAmenitiesByIdConsortium= async () => {
+    const getAllAmenitiesByIdConsortium = async () => {
         try {
+            if (!consortiumIdState) {
+                return;
+            }
+
+
             // Obtén el token almacenado
             const token = localStorage.getItem('token');
             if (!token) {
@@ -219,7 +251,11 @@ export function AdminManageContextProvider(props){
         }
     };
 
-    const getAllPostsByIdConsortium= async () => {   // Obtén el token del almacenamiento local
+    const getAllPostsByIdConsortium = async () => {   // Obtén el token del almacenamiento local
+        if (!consortiumIdState) {
+            return;
+        }
+
         const token = localStorage.getItem('token');
         if (!token) {
             alert("No estás autorizado. Por favor, inicia sesión.");
@@ -260,22 +296,57 @@ export function AdminManageContextProvider(props){
         }
     };
 
-    const getAllMaintenanceFeesByIdConsortium= async () => {
+    const getAllMaintenanceFeesByIdConsortium = async () => {
+        if (!consortiumIdState) {
+            return;
+        }
         const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/maintenanceFee?consortiumId=${consortiumIdState}`)
-        console.log(res.data);
         const maintenanceFees = res.data.content;
         setAllMaintenanceFees(maintenanceFees.map(maintenanceFee =>{
             return {
                 maintenanceFeeId: maintenanceFee.maintenanceFeeId,
                 period: maintenanceFee.period,
                 fileName: maintenanceFee.fileName,
-                uploadDate: formatDate(maintenanceFee.uploadDate)
+                uploadDate: formatDate(maintenanceFee.uploadDate),
+                resume: maintenanceFee.resume,
             }
         }))
     }
 
+    useEffect(() => {
+        const storedConsortiumId = localStorage.getItem('consortiumId');
+        if (storedConsortiumId) {
+            setConsortiumIdState(storedConsortiumId);
+        } else {
+            navigate('/admin/management/'); // Redirect if no consortiumId is found
+        }
+    }, []);
+
+    useEffect(() => {
+        const period = localStorage.getItem('period');
+        const storedConsortiumId = localStorage.getItem('consortiumId');
+        if (storedConsortiumId) {
+            setPeriod(period);
+            setConsortiumIdState(storedConsortiumId);
+            getAllMaintenanceFeesPaymentByIdConsortium()
+        } else {
+            navigate('/admin/management/'); // Redirect if no consortiumId is found
+        }
+    }, []);
+
+    useEffect(() => {
+        if (consortiumIdState) {
+            getAConsortiumByIdConsortium();
+        }
+    }, [consortiumIdState]);
+
     const getAllMaintenanceFeesPaymentByIdConsortium = async () => {
         try {
+
+            if (!consortiumIdState || !period) {
+                return;
+            }
+
             // Obtén el token
             const token = localStorage.getItem('token');
             if (!token) {
@@ -321,6 +392,61 @@ export function AdminManageContextProvider(props){
         }
     };
 
+    const getAllClaimByConsortium = async () => {
+        try {
+
+            if (!consortiumIdState) {
+                return;
+            }
+
+            // Obtén el token
+            const token = localStorage.getItem('token');
+            if (!token) {
+                alert("No tienes acceso. Por favor, inicia sesión.");
+                return;
+            }
+
+            // Decodifica el token
+            const decodedToken = jwtDecode(token);
+            const roles = decodedToken.role || [];
+
+            // Verifica el rol
+            if (!roles.includes('ROLE_ADMIN')) {
+                alert("No tienes permisos para acceder a esta información.");
+                return;
+            }
+
+            // Realiza la solicitud
+            const res = await axios.get(
+                `${import.meta.env.VITE_API_BASE_URL}/issueReport/consortium/${consortiumIdState}/admin`, // consortiumId en la URL
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            const claims = res.data.content;
+            console.log(claims)
+            setAllClaims(
+                claims.map((claim) => ({
+                    issueReportId: claim.issueReportId,
+                    subject: claim.subject,
+                    issue: claim.issue,
+                    user: claim.person.name && claim.person.lastName
+                    ? `${claim.person.name} ${claim.person.lastName}`
+                        : '',
+                    status: statusMapping[claim.status] || claim.status,
+                    createdDate: formatDate(claim.createdDate),
+                    response: claim.response,
+                    responseDate: formatDate(claim.responseDate),
+                }))
+            );
+        } catch (error) {
+            console.error("Error al obtener las expensas: ", error);
+            alert("Hubo un error al obtener los datos.");
+        }
+    };
  return(
      <AdminManageContext.Provider value={{
          consortiumIdState,
@@ -342,13 +468,16 @@ export function AdminManageContextProvider(props){
          period ,
          setPeriod,
          allMaintenanceFeesPayment , setAllMaintenanceFeesPayment,
+         allClaims , setAllClaims,
+         statusMapping,
          getAllPersons,
          getAllDepartmentsByConsortium,
          getAConsortiumByIdConsortium,
          getAllAmenitiesByIdConsortium,
          getAllPostsByIdConsortium,
          getAllMaintenanceFeesByIdConsortium,
-         getAllMaintenanceFeesPaymentByIdConsortium
+         getAllMaintenanceFeesPaymentByIdConsortium,
+         getAllClaimByConsortium
 
      }}>
          {props.children}

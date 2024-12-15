@@ -63,6 +63,7 @@ function AdminConsortiumList(){
 
     const handleAdminClick = (consortiumId) => {
         setConsortiumIdState(consortiumId)
+        localStorage.setItem('consortiumId', consortiumId)
         // Redirige a la nueva pantalla con el ID del consorcio
         navigate(`/admin/management/${consortiumId}/dashboard`)
     };
@@ -147,40 +148,7 @@ function AdminConsortiumList(){
             alert("Ocurrió un error al intentar obtener los consorcios.");
         }
     };
-    const getAllConsortiumByFilter = async () => {
-        const handleEmptyValues = (value) => {
-            return value === '' ? null : value;
-        };
 
-        const name = handleEmptyValues(consortiumName)
-        const city = handleEmptyValues(consortiumCity)
-        const province = handleEmptyValues(consortiumProvince)
-
-        let params = {};
-        if (name !== null) params.name = name;
-        if (city !== null) params.city = city;
-        if (province !== null) params.province = province;
-
-        if (Object.keys(params).length === 0) {
-            getAllConsortiumByIdAdmin();
-
-        } else {
-            const queryParams = new URLSearchParams(params).toString();
-            const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/consortiums/43/filter?${queryParams}`)
-            const consortiums = res.data.content;
-
-            setAllConsortiumByAdmin(consortiums.map(consortium =>{
-                return {
-                    consortiumId : consortium.consortiumId,
-                    name: consortium.name,
-                    address: consortium.address,
-                    city: consortium.city,
-                    province: consortium.province,
-
-                }
-            }))
-        }
-    };
 
     return (
         <div>
@@ -276,7 +244,7 @@ function AdminConsortiumList(){
                                                         sx={{ color: '#002776', display: 'flex', alignItems: 'center' }}
                                                     >
                                                         <LocationOn sx={{ fontSize: 20, color: '#002776', marginRight: '5px'}} />
-                                                        {`${consortium.address}, ${consortium.city}, ${consortium.province}`}
+                                                        {`${consortium.address}, ${consortium.city.displayName}, ${consortium.province.displayName}`}
                                                     </Typography>
                                                 </Box>
                                                 <IconButton component="label" onClick={(e) => e.stopPropagation()}>

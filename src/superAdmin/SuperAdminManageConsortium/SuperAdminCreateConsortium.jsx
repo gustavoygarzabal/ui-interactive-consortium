@@ -21,6 +21,8 @@ function SuperAdminCreateConsortium(){
     const [consortiumInfo, setConsortiumInfo] = useState({})
     const [consortiumCreated, setConsortiumCreated] = useState(true);
     const [openAlert, setOpenAlert] = useState(false)
+    const [states, setStates] = useState('')
+    const [cities, setCities] = useState('')
 
     const validateFields = () => {
         const addressRegex = /^[A-Za-z\s]+\s\d+$/;
@@ -86,6 +88,108 @@ function SuperAdminCreateConsortium(){
         }
     }
 
+    const handleStateChange = (event) => {
+        const { name, value } = event.target;
+
+        setConsortiumInfo(prevState => ({
+            ...prevState,
+            state: value
+        }));
+    }
+
+    const handleCityChange = (event) => {
+        const { name, value } = event.target;
+
+        setConsortiumInfo(prevState => ({
+            ...prevState,
+            city: value
+        }));
+    }
+
+    useEffect(() => {
+        getAllStates()
+    }, []);
+
+    useEffect(() => {
+        if (consortiumInfo.state) {
+            getAllCities(consortiumInfo.state)
+        }
+    }, [consortiumInfo.state]);
+
+    const getAllStates = async () => {
+        const token = localStorage.getItem('token'); // Obtén el token almacenado
+
+        if (!token) {
+            alert("No estás autorizado. Por favor, inicia sesión.");
+            return; // No continúa si no hay token
+        }
+
+        try {
+            // Decodifica el token y verifica si tiene el rol de SuperAdmin
+            const decodedToken = jwtDecode(token);
+            const isSuperAdmin = decodedToken?.role?.includes('ROLE_ROOT');
+
+            if (!isSuperAdmin) {
+                alert("No tienes permisos para acceder a esta página.");
+                return; // No continúa si no es SuperAdmin
+            }
+
+            const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/consortiums/states`, {
+                headers: {
+                    Authorization: `Bearer ${token}` // Se incluye el token en el encabezado de la solicitud
+                }
+            });
+
+            const states = res.data || [];
+            setStates(
+                states.map(state => ({
+                    stateId: state.id,
+                    stateName: state.displayName
+                }))
+            );
+        } catch (error) {
+            console.error("Error al obtener las provincias:", error);
+            alert("Ocurrió un error al obtener las provincias. Intenta nuevamente.");
+        }
+    };
+
+    const getAllCities = async (stateId) => {
+        const token = localStorage.getItem('token'); // Obtén el token almacenado
+
+        if (!token) {
+            alert("No estás autorizado. Por favor, inicia sesión.");
+            return; // No continúa si no hay token
+        }
+
+        try {
+            // Decodifica el token y verifica si tiene el rol de SuperAdmin
+            const decodedToken = jwtDecode(token);
+            const isSuperAdmin = decodedToken?.role?.includes('ROLE_ROOT');
+
+            if (!isSuperAdmin) {
+                alert("No tienes permisos para acceder a esta página.");
+                return; // No continúa si no es SuperAdmin
+            }
+
+            const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/consortiums/states/${stateId}/cities`, {
+                headers: {
+                    Authorization: `Bearer ${token}` // Se incluye el token en el encabezado de la solicitud
+                }
+            });
+
+            const cities = res.data;
+            setCities(
+                cities.map(city => ({
+                    cityId: city.id,
+                    cityName: city.displayName
+                }))
+            );
+        } catch (error) {
+            console.error("Error al obtener las ciudades:", error);
+            alert("Ocurrió un error al obtener las ciudades. Intenta nuevamente.");
+        }
+    };
+
     const handleSubmit = async (event) => {
         event.preventDefault();
 
@@ -113,8 +217,12 @@ function SuperAdminCreateConsortium(){
                 let url = `${import.meta.env.VITE_API_BASE_URL}/consortiums`;
 
                 try {
+                    let request = consortiumInfo;
+                    request.city = {id: consortiumInfo.city};
+                    request.province = {id: consortiumInfo.state};
+
                     // Realiza la solicitud POST para crear el consorcio, pasando el token en los headers
-                    await axios.post(url, consortiumInfo, {
+                    await axios.post(url, request, {
                         headers: {
                             Authorization: `Bearer ${token}` // Incluye el token en los encabezados
                         }
@@ -245,14 +353,13 @@ function SuperAdminCreateConsortium(){
                                 </Grid>
                                 <Grid item xs={12}>
                                     <TextField
-                                        id="outlined-basic"
-                                        label="Ciudad"
+                                        select
+                                        label="Seleccione una Provincia"
                                         variant="outlined"
                                         size="small"
-                                        type="text"
-                                        name="city"
-                                        value={consortiumInfo.city || ""}
-                                        onChange={handleChange}
+                                        name="state"
+                                        value={consortiumInfo?.state || ''}
+                                        onChange={handleStateChange}
                                         sx={{
                                             '& .MuiOutlinedInput-root': {
                                                 '& fieldset': {
@@ -269,38 +376,53 @@ function SuperAdminCreateConsortium(){
                                                 color: '#002776', // Cambia el color del label al enfocarse
                                             },
                                         }}
-                                    />
+                                        fullWidth
+                                    >
+
+                                        {states ? states.map(state => (
+                                            <MenuItem key={state.stateId} value={state.stateId}>
+                                                {state.stateName}
+                                            </MenuItem>
+                                        )) : (
+                                            <MenuItem disabled>No hay provincias disponibles</MenuItem>
+                                        )}
+                                    </TextField>
                                 </Grid>
                                 <Grid item xs={12}>
                                     <TextField
-                                        id="outlined-basic"
-                                        label="Provincia"
+                                        select
+                                        label="Seleccione una Ciudad"
                                         variant="outlined"
                                         size="small"
-                                        type="text"
-                                        name="province"
-                                        value={consortiumInfo.province || ""}
-                                        onChange={handleChange}
+                                        name="city"
+                                        value={consortiumInfo?.city || ''}
+                                        onChange={handleCityChange}
                                         sx={{
                                             '& .MuiOutlinedInput-root': {
                                                 '& fieldset': {
-                                                    borderColor: errors.province ? 'red' : '#002776',
+                                                    borderColor: '#002776',
                                                 },
                                                 '&:hover fieldset': {
-                                                    borderColor: errors.province ? 'red' : '#002776',
+                                                    borderColor: '#002776',
                                                 },
                                                 '&.Mui-focused fieldset': {
-                                                    borderColor: errors.province ? 'red' : '#002776',
+                                                    borderColor: '#002776',
                                                 },
                                             },
                                             '& label.Mui-focused': {
-                                                color: errors.province ? 'red' : '#002776', // Cambia el color del label al enfocarse
+                                                color: '#002776', // Cambia el color del label al enfocarse
                                             },
                                         }}
-                                        error={errors.province}
-                                        helperText={errors.province ? 'No se permiten números' : ''}
                                         fullWidth
-                                    />
+                                    >
+                                        {cities ? cities.map(city => (
+                                            <MenuItem key={city.cityId} value={city.cityId}>
+                                                {city.cityName}
+                                            </MenuItem>
+                                        )) : (
+                                            <MenuItem disabled>No hay provincias disponibles</MenuItem>
+                                        )}
+                                    </TextField>
                                 </Grid>
                                 <Grid item xs={12}>
                                     <TextField

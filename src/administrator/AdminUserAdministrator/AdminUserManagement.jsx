@@ -152,7 +152,7 @@ function AdminUserManagement(){
         if (personName === '' && personLastName === '' && personMail === '' && personDni === '') {
             getAllPersons()
         }
-    }, [personName, personLastName, personMail, personDni]);
+    }, [personName, personLastName, personMail, personDni, consortiumIdState]);
 
     useEffect(() => {
         if (openEdit){
