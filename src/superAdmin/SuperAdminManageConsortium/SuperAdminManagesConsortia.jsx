@@ -33,8 +33,8 @@ import SuperAdminSidebar from "../../SuperAdminSidebar.jsx";
 
 const columns = [
     { id: 'name', label: 'Edificio', minWidth: 100 },
-    { id: 'city', label: 'Ciudad', minWidth: 100 },
     { id: 'province', label: 'Provincia', minWidth: 100 },
+    { id: 'city', label: 'Ciudad', minWidth: 100 },
     { id: 'fullName', label: 'Administrador', minWidth: 100}
 ];
 
@@ -58,6 +58,9 @@ function SuperAdminManagesConsortia(){
     const [editConsortiumProvince, setEditConsortiumProvince ] = useState('')
     const [editConsortiumAdministratorId, setEditConsortiumAdministratorId] = useState(null)
     const [text, setText] = useState('')
+    const [states, setStates] = useState('')
+    const [cities, setCities] = useState('')
+
     const [errors, setErrors] = useState({
         address: false,
         province: false
@@ -85,18 +88,99 @@ function SuperAdminManagesConsortia(){
     };
     const validateFields = () => {
         const addressRegex = /^[A-Za-z\s]+\s\d+$/;
-        const provinceRegex = /^[A-Za-zÀ-ÿ\s]+$/
 
         setErrors({
             address: !addressRegex.test(consortiumInfo.address),
-            province: !provinceRegex.test(consortiumInfo.province)
         })
 
         return (
-            addressRegex.test(consortiumInfo.address)&&
-            provinceRegex.test(consortiumInfo.province)
+            addressRegex.test(consortiumInfo.address)
         )
     }
+
+    useEffect(() => {
+        getAllStates()
+    }, []);
+
+    useEffect(() => {
+        if (consortiumInfo?.province?.id) {
+            getAllCities(consortiumInfo.province.id)
+        }
+    }, [consortiumInfo?.province?.id]);
+
+    const getAllStates = async () => {
+        const token = localStorage.getItem('token'); // Obtén el token almacenado
+
+        if (!token) {
+            alert("No estás autorizado. Por favor, inicia sesión.");
+            return; // No continúa si no hay token
+        }
+
+        try {
+            // Decodifica el token y verifica si tiene el rol de SuperAdmin
+            const decodedToken = jwtDecode(token);
+            const isSuperAdmin = decodedToken?.role?.includes('ROLE_ROOT');
+
+            if (!isSuperAdmin) {
+                alert("No tienes permisos para acceder a esta página.");
+                return; // No continúa si no es SuperAdmin
+            }
+
+            const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/consortiums/states`, {
+                headers: {
+                    Authorization: `Bearer ${token}` // Se incluye el token en el encabezado de la solicitud
+                }
+            });
+
+            const states = res.data || [];
+            setStates(
+                states.map(state => ({
+                    stateId: state.id,
+                    stateName: state.displayName
+                }))
+            );
+        } catch (error) {
+            console.error("Error al obtener las provincias:", error);
+            alert("Ocurrió un error al obtener las provincias. Intenta nuevamente.");
+        }
+    };
+
+    const getAllCities = async (stateId) => {
+        const token = localStorage.getItem('token'); // Obtén el token almacenado
+
+        if (!token) {
+            alert("No estás autorizado. Por favor, inicia sesión.");
+            return; // No continúa si no hay token
+        }
+
+        try {
+            // Decodifica el token y verifica si tiene el rol de SuperAdmin
+            const decodedToken = jwtDecode(token);
+            const isSuperAdmin = decodedToken?.role?.includes('ROLE_ROOT');
+
+            if (!isSuperAdmin) {
+                alert("No tienes permisos para acceder a esta página.");
+                return; // No continúa si no es SuperAdmin
+            }
+
+            const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/consortiums/states/${stateId}/cities`, {
+                headers: {
+                    Authorization: `Bearer ${token}` // Se incluye el token en el encabezado de la solicitud
+                }
+            });
+
+            const cities = res.data;
+            setCities(
+                cities.map(city => ({
+                    cityId: city.id,
+                    cityName: city.displayName
+                }))
+            );
+        } catch (error) {
+            console.error("Error al obtener las ciudades:", error);
+            alert("Ocurrió un error al obtener las ciudades. Intenta nuevamente.");
+        }
+    };
 
     const handleClickOpen = (idConsortiumToDelete) => {
         setIdConsortiumToDelete(idConsortiumToDelete)
@@ -133,6 +217,24 @@ function SuperAdminManagesConsortia(){
                 administratorId: null,
             }
         })
+    }
+
+    const handleStateChange = (event) => {
+        const { name, value } = event.target;
+
+        setConsortiumInfo(prevState => ({
+            ...prevState,
+            province: {id: value}
+        }));
+    }
+
+    const handleCityChange = (event) => {
+        const { name, value } = event.target
+
+        setConsortiumInfo(prevState => ({
+            ...prevState,
+            city: {id: value}
+        }));
     }
 
 
@@ -299,8 +401,8 @@ function SuperAdminManagesConsortia(){
                             consortiumId: consortium.consortiumId,
                             name: consortium.name,
                             address: consortium.address,
-                            city: consortium.city,
-                            province: consortium.province,
+                            city: consortium.city.displayName,
+                            province: consortium.province.displayName,
                             administratorId: administrator.administratorId || '',
                             fullName: administrator.name && administrator.lastName
                                 ? `${administrator.name} ${administrator.lastName}`
@@ -443,22 +545,22 @@ function SuperAdminManagesConsortia(){
                     }}
                 />
                 <TextField
-                    label="Ciudad"
+                    label="Provincia"
                     variant="outlined"
                     size="small"
-                    value={consortiumCity}
-                    onChange={(e) => setConsortiumCity(e.target.value)}
+                    value={consortiumProvince.id}
+                    onChange={(e) => setConsortiumProvince(e.target.value)}
                     sx={{
                         ...textFieldStyles,
                         flex: 1,
                     }}
                 />
                 <TextField
-                    label="Provincia"
+                    label="Ciudad"
                     variant="outlined"
                     size="small"
-                    value={consortiumProvince}
-                    onChange={(e) => setConsortiumProvince(e.target.value)}
+                    value={consortiumCity.id}
+                    onChange={(e) => setConsortiumCity(e.target.value)}
                     sx={{
                         ...textFieldStyles,
                         flex: 1,
@@ -576,7 +678,7 @@ function SuperAdminManagesConsortia(){
                                                 align={column.align}
                                                 sx={{ ...tableCellStyles }} // Las celdas no tienen borderRadius
                                             >
-                                                {consortium[column.id]}
+                                                { (column.id === 'city' || column.id === 'province') ? consortium[column.id].displayName : consortium[column.id] }
                                             </TableCell>
                                         ))}
                                         <TableCell align="center" sx={tableCellStyles}>
@@ -725,14 +827,13 @@ function SuperAdminManagesConsortia(){
                                 </Grid>
                                 <Grid item xs={12}>
                                     <TextField
-                                        id="outlined-basic"
-                                        label="Ciudad"
+                                        select
+                                        label="Seleccione una Provincia"
                                         variant="outlined"
                                         size="small"
-                                        type="text"
-                                        name="city"
-                                        value={consortiumInfo.city !== undefined ? consortiumInfo.city : editConsortiumCity || ''}
-                                        onChange={handleChange}
+                                        name="state"
+                                        value={consortiumInfo?.province.id || ''}
+                                        onChange={handleStateChange}
                                         sx={{
                                             '& .MuiOutlinedInput-root': {
                                                 '& fieldset': {
@@ -749,38 +850,53 @@ function SuperAdminManagesConsortia(){
                                                 color: '#002776', // Cambia el color del label al enfocarse
                                             },
                                         }}
-                                    />
+                                        fullWidth
+                                    >
+
+                                        {states ? states.map(state => (
+                                            <MenuItem key={state.stateId} value={state.stateId}>
+                                                {state.stateName}
+                                            </MenuItem>
+                                        )) : (
+                                            <MenuItem disabled>No hay provincias disponibles</MenuItem>
+                                        )}
+                                    </TextField>
                                 </Grid>
                                 <Grid item xs={12}>
                                     <TextField
-                                        id="outlined-basic"
-                                        label="Provincia"
+                                        select
+                                        label="Seleccione una Ciudad"
                                         variant="outlined"
                                         size="small"
-                                        type="text"
-                                        name="province"
-                                        value={consortiumInfo.province !== undefined ? consortiumInfo.province : editConsortiumProvince || ''}
-                                        onChange={handleChange}
+                                        name="city"
+                                        value={consortiumInfo?.city.id || ''}
+                                        onChange={handleCityChange}
                                         sx={{
                                             '& .MuiOutlinedInput-root': {
                                                 '& fieldset': {
-                                                    borderColor: errors.province ? 'red' : '#002776',
+                                                    borderColor: '#002776',
                                                 },
                                                 '&:hover fieldset': {
-                                                    borderColor: errors.province ? 'red' : '#002776',
+                                                    borderColor: '#002776',
                                                 },
                                                 '&.Mui-focused fieldset': {
-                                                    borderColor: errors.province ? 'red' : '#002776',
+                                                    borderColor: '#002776',
                                                 },
                                             },
                                             '& label.Mui-focused': {
-                                                color: errors.province ? 'red' : '#002776', // Cambia el color del label al enfocarse
+                                                color: '#002776', // Cambia el color del label al enfocarse
                                             },
                                         }}
-                                        error={errors.province}
-                                        helperText={errors.province ? 'No se permiten números' : ''}
                                         fullWidth
-                                    />
+                                    >
+                                        {cities ? cities.map(city => (
+                                            <MenuItem key={city.cityId} value={city.cityId}>
+                                                {city.cityName}
+                                            </MenuItem>
+                                        )) : (
+                                            <MenuItem disabled>No hay provincias disponibles</MenuItem>
+                                        )}
+                                    </TextField>
                                 </Grid>
                                 <Grid item xs={12}>
                                     <TextField
@@ -809,7 +925,7 @@ function SuperAdminManagesConsortia(){
                                         }}
                                         fullWidth
                                     >
-                                        {allAdministrator.map(administrator => (
+                                        {allAdministrator?.map(administrator => (
                                             <MenuItem key={administrator.administratorId} value={administrator.administratorId}>
                                                 {administrator.fullName}
                                             </MenuItem>

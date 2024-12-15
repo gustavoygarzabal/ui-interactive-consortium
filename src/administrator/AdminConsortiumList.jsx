@@ -277,7 +277,7 @@ function AdminConsortiumList(){
                                                         sx={{ color: '#002776', display: 'flex', alignItems: 'center' }}
                                                     >
                                                         <LocationOn sx={{ fontSize: 20, color: '#002776', marginRight: '5px'}} />
-                                                        {`${consortium.address}, ${consortium.city}, ${consortium.province}`}
+                                                        {`${consortium.address}, ${consortium.city.displayName}, ${consortium.province.displayName}`}
                                                     </Typography>
                                                 </Box>
                                                 <IconButton component="label" onClick={(e) => e.stopPropagation()}>
